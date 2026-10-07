@@ -1,5 +1,5 @@
 // pages/admin/AdminWishlist.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, TrendingUp, Users, Package, Loader2, AlertCircle, ImageOff } from 'lucide-react';
 import { apiGet, ApiError } from '../../api/client';
 import { useSettings } from '../../context/SettingsContext';
@@ -25,7 +25,7 @@ const AdminWishlist = () => {
   };
 
   useEffect(() => {
-	fetchAnalytics();
+	Promise.resolve().then(fetchAnalytics);
   }, []);
 
   return (

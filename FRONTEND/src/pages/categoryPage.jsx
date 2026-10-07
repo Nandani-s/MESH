@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
-  Heart, Star, Package, Loader2, AlertCircle,
+  Heart, Package, Loader2, AlertCircle,
   ArrowRight, ArrowLeft, Grid3X3, List, Search
 } from 'lucide-react';
 import { productApi } from '../api/products';
@@ -10,6 +10,9 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import Container from '../components/ui/Container';
+import PageHeader from '../components/ui/PageHeader';
+import ProductCard from '../components/ui/ProductCard';
 
 const CategoryPage = () => {
   const { slug } = useParams();
@@ -45,10 +48,13 @@ const CategoryPage = () => {
 		}
 		setCategory(found);
 
-		// Filter products belonging to this category
-		const filtered = (prodRes.data || []).filter(
-		  p => p.category?.toLowerCase() === found.name.toLowerCase()
-		);
+		// Filter products belonging to this category (match name or slug)
+		const nameKey = found.name.toLowerCase();
+		const slugKey = (found.slug || '').toLowerCase();
+		const filtered = (prodRes.data || []).filter((p) => {
+		  const cat = (p.category || '').toLowerCase();
+		  return cat === nameKey || cat === slugKey;
+		});
 		setProducts(filtered);
 	  } catch {
 		setError('Failed to load category. Please try again.');
@@ -93,34 +99,27 @@ const CategoryPage = () => {
   );
 
   return (
-	<div className="min-h-screen bg-background-light">
+	<div className="min-h-screen bg-background">
 	  {/* Header */}
-	  <section className="bg-gradient-to-br from-secondary-50 via-surface to-background-light py-16">
-		<div className="max-w-7xl mx-auto px-4">
-		  <Link to="/categories"
-			className="inline-flex items-center gap-2 text-text-muted hover:text-primary-500 text-sm mb-6 transition-colors">
-			<ArrowLeft className="w-4 h-4" /> All Categories
-		  </Link>
-		  <div className="flex items-center gap-5">
-			{category?.image && (
-			  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center text-4xl flex-shrink-0">
-				{category.image.startsWith('http')
-				  ? <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-2xl" />
-				  : category.image}
-			  </div>
-			)}
-			<div>
-			  <h1 className="text-4xl font-bold text-text-primary">{category?.name}</h1>
-			  {category?.description && (
-				<p className="text-text-muted mt-1">{category.description}</p>
-			  )}
-			  <p className="text-sm text-text-muted mt-1">{products.length} products</p>
-			</div>
+	  <PageHeader
+		eyebrow="Collection"
+		title={category?.name}
+		subtitle={category?.description || `${products.length} products`}
+		breadcrumb={[
+		  { label: 'Categories', to: '/categories' },
+		  { label: category?.name || slug },
+		]}
+	  >
+		{category?.image && (
+		  <div className="mt-5 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center text-4xl overflow-hidden">
+			{category.image.startsWith('http')
+			  ? <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+			  : category.image}
 		  </div>
-		</div>
-	  </section>
+		)}
+	  </PageHeader>
 
-	  <div className="max-w-7xl mx-auto px-4 py-8">
+	  <Container className="py-8">
 		{/* Controls */}
 		<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
 		  <div className="relative flex-1 max-w-xs">
@@ -165,46 +164,10 @@ const CategoryPage = () => {
 
 		{/* Grid */}
 		{displayedProducts.length > 0 && viewMode === 'grid' && (
-		  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-			{displayedProducts.map((product) => {
-			  const inWishlist = isInWishlist(product._id);
-			  return (
-				<Link key={product._id} to={`/product/${product._id}`}
-				  className="group bg-surface-light rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-border-light hover:border-primary-200">
-				  <div className="relative overflow-hidden aspect-[3/4]">
-					{product.image ? (
-					  <img src={product.image} alt={product.name}
-						className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-					) : (
-					  <div className="w-full h-full bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
-						<Package className="w-12 h-12 text-primary-200" />
-					  </div>
-					)}
-					<button onClick={(e) => handleHeartClick(e, product)}
-					  className={`absolute top-3 right-3 p-2.5 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110 ${
-						inWishlist ? 'bg-danger-500 text-white opacity-100' : 'bg-white/95 text-text-primary hover:text-danger-500'
-					  }`}>
-					  <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
-					</button>
-				  </div>
-				  <div className="p-4">
-					<p className="text-xs text-text-muted mb-1">{product.brand}</p>
-					<h3 className="font-semibold text-text-primary mb-2 line-clamp-1">{product.name}</h3>
-					<div className="flex items-center justify-between">
-					  <span className="text-lg font-bold text-primary-600">{formatCurrency(product.price, settings.currency)}</span>
-					  <span className={`text-xs px-2 py-0.5 rounded-full ${
-						product.availability === 'InStock' ? 'bg-green-100 text-green-700' :
-						product.availability === 'OutOfStock' ? 'bg-red-100 text-red-700' :
-						'bg-yellow-100 text-yellow-700'
-					  }`}>
-						{product.availability === 'InStock' ? 'In Stock' :
-						 product.availability === 'OutOfStock' ? 'Sold Out' : 'Pre-Order'}
-					  </span>
-					</div>
-				  </div>
-				</Link>
-			  );
-			})}
+		  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+			{displayedProducts.map((product) => (
+			  <ProductCard key={product._id} product={product} />
+			))}
 		  </div>
 		)}
 
@@ -241,12 +204,12 @@ const CategoryPage = () => {
 					  </button>
 					</div>
 				  </div>
-				</Link>
-			  );
-			})}
-		  </div>
-		)}
+			</Link>
+		  );
+		})}
 	  </div>
+	)}
+  </Container>
 	</div>
   );
 };

@@ -14,23 +14,38 @@ if (!esewaKey) {
   console.warn("⚠️  ESEWA_SECRET_KEY missing from .env — eSewa payments disabled");
 }
 
-// Only create the instance if at least one gateway has credentials
-const payments = new NepPayments({
-  khalti: khaltiKey
-    ? {
-        secretKey: khaltiKey,
-        environment: "sandbox", // change to "production" later
-      }
-    : undefined,
-  esewa: esewaKey
-    ? {
-        productCode: process.env.ESEWA_PRODUCT_CODE || "EPAYTEST",
-        secretKey: esewaKey,
-        environment: "sandbox",
-        successUrl: `${process.env.BACKEND_URL}/api/payment/esewa/callback`,
-        failureUrl: `${process.env.FRONTEND_URL}/payment/failure`,
-      }
-    : undefined,
-});
+const unavailableGateway = {
+  createPayment() {
+    throw new Error("Payment gateway is not configured");
+  },
+  verifyPayment() {
+    throw new Error("Payment gateway is not configured");
+  },
+};
+
+// Only create the instance if at least one gateway has credentials.
+const payments =
+  khaltiKey || esewaKey
+    ? new NepPayments({
+        khalti: khaltiKey
+          ? {
+              secretKey: khaltiKey,
+              environment: "sandbox", // change to "production" later
+            }
+          : undefined,
+        esewa: esewaKey
+          ? {
+              productCode: process.env.ESEWA_PRODUCT_CODE || "EPAYTEST",
+              secretKey: esewaKey,
+              environment: "sandbox",
+              successUrl: `${process.env.BACKEND_URL}/api/payment/esewa/callback`,
+              failureUrl: `${process.env.FRONTEND_URL}/payment/failure`,
+            }
+          : undefined,
+      })
+    : {
+        khalti: unavailableGateway,
+        esewa: unavailableGateway,
+      };
 
 export default payments;

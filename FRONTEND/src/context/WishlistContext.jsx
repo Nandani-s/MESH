@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { wishlistApi } from '../api/wishlist';
 import { useAuth } from './AuthContext';
 
@@ -27,7 +27,7 @@ export function WishlistProvider({ children }) {
 
   // Re-fetch whenever the user logs in or out
   useEffect(() => {
-	fetchWishlist();
+	Promise.resolve().then(fetchWishlist);
   }, [fetchWishlist]);
 
   // Check if a product is in the wishlist (by _id string)

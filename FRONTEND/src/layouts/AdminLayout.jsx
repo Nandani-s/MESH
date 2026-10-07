@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
@@ -11,7 +11,6 @@ import {
   Users,
   ShoppingCart,
   Heart,
-  TrendingUp,
   Settings,
   LogOut,
   Menu,
@@ -19,11 +18,8 @@ import {
   ChevronDown,
   Bell,
   Search,
-  Plus,
   Eye,
   BarChart3,
-  DollarSign,
-  Box,
   Home
 } from 'lucide-react';
 

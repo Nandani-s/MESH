@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, MapPin, Phone, User, CreditCard,
-  Wallet, Banknote, Loader2, ShoppingBag, AlertCircle
+  MapPin, Phone, User, CreditCard,
+  Wallet, Banknote, Loader2, ShoppingBag, AlertCircle,
+  Check, Package
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import { useSettings } from '../context/SettingsContext';
 import { apiPost } from '../api/client';
 import { formatCurrency } from '../utils/formatCurrency';
 import { paymentApi } from '../api/payment';
+import PageHeader from '../components/ui/PageHeader';
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -41,15 +43,14 @@ export default function Checkout() {
   const orderTotal = cartTotal + shippingCost;
 
   if (!isAuthenticated) {
-    navigate('/login');
-    return null;
+    return <Navigate to="/login" replace state={{ from: '/checkout' }} />;
   }
 
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
-          <ShoppingBag className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+          <ShoppingBag className="w-20 h-20 text-border mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
           <Link to="/shop" className="text-primary-500 hover:underline">Go shopping →</Link>
         </div>
@@ -70,6 +71,13 @@ export default function Checkout() {
     if (!form.city.trim()) return 'City is required';
     return null;
   };
+
+  const shippingComplete = validate() === null;
+  const steps = [
+    { label: 'Details', done: shippingComplete },
+    { label: 'Payment', done: shippingComplete },
+    { label: 'Place Order', done: false },
+  ];
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -131,19 +139,39 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <section className="bg-gradient-to-br from-secondary-50 via-surface to-background-light py-10">
-        <div className="max-w-6xl mx-auto px-4">
-          <Link to="/cart" className="inline-flex items-center gap-2 text-text-muted hover:text-primary-500 text-sm mb-4">
-            <ArrowLeft className="w-4 h-4" /> Back to Cart
-          </Link>
-          <h1 className="text-4xl font-bold text-text-primary">Checkout</h1>
-          <p className="text-text-muted mt-1">Complete your order</p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Secure Checkout"
+        title="Checkout"
+        subtitle="Complete your order — details stay saved if you go back."
+        breadcrumb={[{ label: 'Cart', to: '/cart' }, { label: 'Checkout' }]}
+      >
+        {/* Progress stepper */}
+        <ol className="mt-6 flex flex-wrap items-center gap-2 sm:gap-4">
+          {steps.map((step, index) => (
+            <li key={step.label} className="flex items-center gap-2 sm:gap-4">
+              <span className={`inline-flex items-center gap-2 text-sm font-semibold ${
+                step.done ? 'text-primary-600' : 'text-text-muted'
+              }`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${
+                  step.done
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-surface-light border border-border-light text-text-muted'
+                }`}>
+                  {step.done ? <Check className="w-4 h-4" /> : index + 1}
+                </span>
+                {step.label}
+              </span>
+              {index < steps.length - 1 && (
+                <span className="hidden sm:block w-8 h-px bg-border-strong" />
+              )}
+            </li>
+          ))}
+        </ol>
+      </PageHeader>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handlePlaceOrder}>
           <div className="grid lg:grid-cols-3 gap-8">
 
@@ -239,11 +267,11 @@ export default function Checkout() {
                       onClick={() => setPaymentMethod('Khalti')}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
                         paymentMethod === 'Khalti'
-                          ? 'border-purple-500 bg-purple-50'
-                          : 'border-border hover:border-purple-300'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-border hover:border-primary-300'
                       }`}
                     >
-                      <Wallet className="w-6 h-6 mb-2 text-purple-600" />
+                      <Wallet className="w-6 h-6 mb-2 text-primary-500" />
                       <p className="font-semibold">Khalti</p>
                       <p className="text-xs text-text-muted">Pay via Khalti wallet</p>
                     </button>
@@ -255,11 +283,11 @@ export default function Checkout() {
                       onClick={() => setPaymentMethod('eSewa')}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
                         paymentMethod === 'eSewa'
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-border hover:border-green-300'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-border hover:border-primary-300'
                       }`}
                     >
-                      <Wallet className="w-6 h-6 mb-2 text-green-600" />
+                      <Wallet className="w-6 h-6 mb-2 text-primary-500" />
                       <p className="font-semibold">eSewa</p>
                       <p className="text-xs text-text-muted">Pay via eSewa wallet</p>
                     </button>
@@ -269,7 +297,7 @@ export default function Checkout() {
 
               {/* Error */}
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-2">
+                <div className="bg-danger-50 border border-danger-200 text-danger-700 p-4 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <p className="text-sm">{error}</p>
                 </div>
@@ -278,8 +306,10 @@ export default function Checkout() {
 
             {/* ─── RIGHT: Order Summary ─── */}
             <div className="lg:col-span-1">
-              <div className="bg-surface-light rounded-2xl border border-border-light p-6 sticky top-6">
-                <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+              <div className="bg-surface-light rounded-2xl border border-border-light p-6 sticky top-28 lg:top-36">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-primary-500" /> Order Summary
+                </h2>
 
                 {/* Items */}
                 <div className="max-h-64 overflow-y-auto space-y-3 mb-4">

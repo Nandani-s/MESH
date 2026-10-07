@@ -1,5 +1,5 @@
 // pages/admin/AdminUsers.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Search, Edit, Trash2, Mail, Phone,
   CheckCircle, XCircle, Shield, Loader2, AlertCircle, X
@@ -35,7 +35,7 @@ const AdminUsers = () => {
 	}
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { Promise.resolve().then(fetchUsers); }, []);
 
   const getInitials = (name = '') => {
 	const parts = name.trim().split(/\s+/);
@@ -187,7 +187,7 @@ const AdminUsers = () => {
 					  <p className="text-xs text-text-muted flex items-center gap-1 mt-1"><Phone className="w-3 h-3" />{user.phone}</p>
 					</td>
 					<td className="px-6 py-4">
-					  <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-fit ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+					  <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-fit ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-primary-100 text-primary-800'}`}>
 						{user.role === 'admin' && <Shield className="w-3 h-3" />}
 						{user.role === 'admin' ? 'Admin' : 'Customer'}
 					  </span>

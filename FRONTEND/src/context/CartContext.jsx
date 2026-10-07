@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { cartApi } from '../api/cart';
 import { useAuth } from './AuthContext';
 
@@ -22,7 +22,7 @@ export function CartProvider({ children }) {
 	}
   }, [isAuthenticated]);
 
-  useEffect(() => { fetchCart(); }, [fetchCart]);
+  useEffect(() => { Promise.resolve().then(fetchCart); }, [fetchCart]);
 
   const addToCart = useCallback(async (productId, quantity = 1) => {
 	if (!isAuthenticated) return false;

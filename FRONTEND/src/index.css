@@ -1,89 +1,119 @@
 @import "tailwindcss";
 
+@layer base {
+  html {
+    background: #FAFAF7;
+  }
+
+  body {
+    margin: 0;
+    background: #FAFAF7;
+    color: #171717;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: #A2E0CD;
+    color: #033126;
+  }
+}
+
 @theme {
-  --color-primary-50: #fff5f5;
-  --color-primary-100: #ffe8e8;
-  --color-primary-200: #ffd1d1;
-  --color-primary-300: #ffb1b1;
-  --color-primary-400: #f78c8c;
-  --color-primary-500: #d1645f;
-  --color-primary-600: #b8524d;
-  --color-primary-700: #9a433f;
-  --color-primary-800: #7c3532;
-  --color-primary-900: #5f2826;
+  /* ── Brand: Emerald Dark #087F5B ─────────────────────── */
+  --color-primary-50: #E9F7F2;
+  --color-primary-100: #CEEEE3;
+  --color-primary-200: #A2E0CD;
+  --color-primary-300: #6DCDB4;
+  --color-primary-400: #33B697;
+  --color-primary-500: #087F5B;
+  --color-primary-600: #076C4E;
+  --color-primary-700: #065A41;
+  --color-primary-800: #054734;
+  --color-primary-900: #033126;
 
-  --color-secondary-50: #fdf7f4;
-  --color-secondary-100: #f9ece7;
-  --color-secondary-200: #f1d7cf;
-  --color-secondary-300: #e7beb2;
-  --color-secondary-400: #d8a99a;
-  --color-secondary-500: #c99281;
-  --color-secondary-600: #b07d6d;
-  --color-secondary-700: #916559;
-  --color-secondary-800: #744f46;
-  --color-secondary-900: #5b3d36;
+  /* ── Support: warm neutrals ──────────────────────────── */
+  --color-secondary-50: #FAFAF7;
+  --color-secondary-100: #F2F2EC;
+  --color-secondary-200: #E7E7DF;
+  --color-secondary-300: #D5D5CC;
+  --color-secondary-400: #B2B2A8;
+  --color-secondary-500: #8E8E84;
+  --color-secondary-600: #73736A;
+  --color-secondary-700: #595952;
+  --color-secondary-800: #41413C;
+  --color-secondary-900: #2A2A27;
 
-  --color-accent-50: #fff7f8;
-  --color-accent-100: #ffeef0;
-  --color-accent-200: #ffd8de;
-  --color-accent-300: #ffbcc8;
-  --color-accent-400: #f79caf;
-  --color-accent-500: #e77d94;
-  --color-accent-600: #cf667d;
-  --color-accent-700: #ae5067;
-  --color-accent-800: #8d4053;
-  --color-accent-900: #703243;
+  /* ── Accent: Emerald Bright #12B886 ──────────────────── */
+  --color-accent-50: #E5FAF3;
+  --color-accent-100: #C4F4E4;
+  --color-accent-200: #8CEACB;
+  --color-accent-300: #55E0B3;
+  --color-accent-400: #29D59F;
+  --color-accent-500: #12B886;
+  --color-accent-600: #0E9C73;
+  --color-accent-700: #0B7E5C;
+  --color-accent-800: #08634A;
+  --color-accent-900: #054636;
 
-  --color-background-light: #fffdfc;
-  --color-background: #faf7f5;
-  --color-background-muted: #f4efec;
-  --color-background-dark: #1f1b1a;
+  /* ── Backgrounds: Warm White #FAFAF7 / Charcoal #171717 ─ */
+  --color-background-light: #FFFFFF;
+  --color-background: #FAFAF7;
+  --color-background-muted: #F1F1EB;
+  --color-background-dark: #171717;
 
-  --color-surface-light: #ffffff;
-  --color-surface: #fcf8f6;
-  --color-surface-elevated: #fffafa;
-  --color-surface-dark: #2a2423;
+  --color-surface-light: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-dark: #1F1F1E;
 
-  --color-text-primary: #2e1b11;
-  --color-text-secondary: #5f514b;
-  --color-text-muted: #8a7a73;
-  --color-text-inverse: #fffdfc;
+  /* ── Text ────────────────────────────────────────────── */
+  --color-text-primary: #171717;
+  --color-text-secondary: #4B4B47;
+  --color-text-muted: #7C7C74;
+  --color-text-inverse: #FAFAF7;
 
-  --color-border-light: #efe5e1;
-  --color-border: #e3d7d1;
-  --color-border-strong: #cdbab2;
-  --color-border-dark: #4a403c;
+  /* ── Borders ─────────────────────────────────────────── */
+  --color-border-light: #ECECE5;
+  --color-border: #E3E3DB;
+  --color-border-strong: #C9C9C0;
+  --color-border-dark: #34342F;
 
-  --color-success-50: #edfdf3;
-  --color-success-100: #d5f8e2;
-  --color-success-200: #acefc6;
-  --color-success-300: #7de1a6;
-  --color-success-400: #4ecf84;
-  --color-success-500: #28b463;
-  --color-success-600: #1f9a54;
-  --color-success-700: #197d45;
-  --color-success-800: #146438;
-  --color-success-900: #104f2d;
+  /* ── Status ──────────────────────────────────────────── */
+  --color-success-50: #E9F9F1;
+  --color-success-100: #D0F3E2;
+  --color-success-200: #A5E8C8;
+  --color-success-300: #70DBAB;
+  --color-success-400: #3BCB8E;
+  --color-success-500: #17A46F;
+  --color-success-600: #10875B;
+  --color-success-700: #0D6C49;
+  --color-success-800: #0A5539;
+  --color-success-900: #07402C;
 
-  --color-warning-50: #fffaf0;
-  --color-warning-100: #fff1d6;
-  --color-warning-200: #ffe0a8;
-  --color-warning-300: #ffcb74;
-  --color-warning-400: #ffb347;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d98207;
-  --color-warning-700: #b56a05;
-  --color-warning-800: #915404;
-  --color-warning-900: #744303;
+  --color-warning-50: #FFFAEF;
+  --color-warning-100: #FFF2D6;
+  --color-warning-200: #FFE2A8;
+  --color-warning-300: #FFCD72;
+  --color-warning-400: #FFB649;
+  --color-warning-500: #F1980B;
+  --color-warning-600: #D37F07;
+  --color-warning-700: #AD6705;
+  --color-warning-800: #8A5104;
+  --color-warning-900: #6C3F03;
 
-  --color-danger-50: #fff1f2;
-  --color-danger-100: #ffe0e3;
-  --color-danger-200: #ffc5cb;
-  --color-danger-300: #ff9ea8;
-  --color-danger-400: #fb7185;
-  --color-danger-500: #e5485f;
-  --color-danger-600: #c9354c;
-  --color-danger-700: #a9283d;
-  --color-danger-800: #8b2235;
-  --color-danger-900: #731d2e;
+  --color-danger-50: #FEF1F2;
+  --color-danger-100: #FDE0E3;
+  --color-danger-200: #FBC2C8;
+  --color-danger-300: #F8959F;
+  --color-danger-400: #F26574;
+  --color-danger-500: #E63E51;
+  --color-danger-600: #CE2B3F;
+  --color-danger-700: #AC2234;
+  --color-danger-800: #8D1F2E;
+  --color-danger-900: #741C28;
+
+  /* ── Typography ──────────────────────────────────────── */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }

@@ -15,7 +15,7 @@ export default function LoginOtp() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [resendTimer, setResendTimer] = useState(0); // seconds
-  const [showResend, setShowResend] = useState(false);
+  const showResend = resendTimer <= 0;
 
   // 6 input refs for auto-focus
   const inputRefs = useRef([]);
@@ -29,10 +29,7 @@ export default function LoginOtp() {
 
   // ─── Resend countdown timer ───
   useEffect(() => {
-    if (resendTimer <= 0) {
-      setShowResend(true);
-      return;
-    }
+    if (resendTimer <= 0) return;
     const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendTimer]);
@@ -50,7 +47,6 @@ export default function LoginOtp() {
       setStep('otp');
       setOtp(['', '', '', '', '', '']);
       setResendTimer(60);
-      setShowResend(false);
       // Focus first OTP box
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err) {
@@ -98,7 +94,6 @@ export default function LoginOtp() {
       setMessage(res.message || 'New OTP sent!');
       setOtp(['', '', '', '', '', '']);
       setResendTimer(60);
-      setShowResend(false);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to resend OTP.');
@@ -153,21 +148,20 @@ export default function LoginOtp() {
     setOtp(['', '', '', '', '', '']);
     setError('');
     setMessage('');
-    setResendTimer(0);
-    setShowResend(false);
+    setResendTimer(60);
   };
 
   // ─── Render ───
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+    <div className="min-h-[70vh] flex items-center justify-center bg-background-muted px-4 py-12">
+      <div className="max-w-md w-full bg-surface-light p-8 rounded-3xl shadow-2xl border border-border-light">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">MESH</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">MESH</h1>
           <h2 className="text-xl font-semibold mb-1">
             {step === 'email' ? 'Login with OTP' : 'Verify OTP'}
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-text-muted text-sm">
             {step === 'email'
               ? 'Enter your email to receive a one-time password'
               : `We sent a 6-digit code to ${email}`}
@@ -176,14 +170,14 @@ export default function LoginOtp() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded mb-4 text-sm">
+          <div className="bg-danger-50 border border-danger-200 text-danger-600 p-3 rounded-xl mb-4 text-sm">
             {error}
           </div>
         )}
 
         {/* Success message */}
         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded mb-4 text-sm">
+          <div className="bg-success-50 border border-success-200 text-success-700 p-3 rounded-xl mb-4 text-sm">
             {message}
           </div>
         )}
@@ -192,7 +186,7 @@ export default function LoginOtp() {
         {step === 'email' && (
           <form onSubmit={handleRequestOtp} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-text-secondary mb-1">
                 Email Address
               </label>
               <input
@@ -203,14 +197,14 @@ export default function LoginOtp() {
                 required
                 autoFocus
                 disabled={loading}
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black disabled:bg-gray-100"
+                className="w-full border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:bg-background-muted transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-black text-white py-2.5 rounded font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full bg-primary-500 text-white py-3 rounded-xl font-semibold hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {loading ? 'Sending OTP...' : 'Send OTP'}
             </button>
@@ -221,7 +215,7 @@ export default function LoginOtp() {
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+              <label className="block text-sm font-medium text-text-secondary mb-3 text-center">
                 Enter 6-digit OTP
               </label>
               <div className="flex justify-center gap-2">
@@ -237,7 +231,7 @@ export default function LoginOtp() {
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     onPaste={handleOtpPaste}
                     disabled={loading}
-                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 disabled:bg-gray-100 transition"
+                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-border rounded-xl focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:bg-background-muted transition"
                   />
                 ))}
               </div>
@@ -246,7 +240,7 @@ export default function LoginOtp() {
             <button
               type="submit"
               disabled={loading || otp.join('').length !== 6}
-              className="w-full bg-black text-white py-2.5 rounded font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full bg-primary-500 text-white py-3 rounded-xl font-semibold hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {loading ? 'Verifying...' : 'Verify & Login'}
             </button>
@@ -258,12 +252,12 @@ export default function LoginOtp() {
                   type="button"
                   onClick={handleResend}
                   disabled={loading}
-                  className="text-black font-medium hover:underline disabled:opacity-50"
+                  className="text-primary-600 font-medium hover:underline disabled:opacity-50"
                 >
                   Didn't get the code? Resend OTP
                 </button>
               ) : (
-                <p className="text-gray-500">
+                <p className="text-text-muted">
                   Resend OTP in <span className="font-medium">{resendTimer}s</span>
                 </p>
               )}
@@ -274,7 +268,7 @@ export default function LoginOtp() {
               type="button"
               onClick={handleChangeEmail}
               disabled={loading}
-              className="w-full text-sm text-gray-500 hover:text-black transition"
+              className="w-full text-sm text-text-muted hover:text-text-primary transition"
             >
               ← Use a different email
             </button>
@@ -282,15 +276,15 @@ export default function LoginOtp() {
         )}
 
         {/* Footer links */}
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500 space-y-2">
+        <div className="mt-6 pt-6 border-t border-border-light text-center text-sm text-text-muted space-y-2">
           <div>
-            <Link to="/login" className="hover:text-black transition">
+            <Link to="/login" className="hover:text-text-primary transition">
               Login with password
             </Link>
           </div>
           <div>
             Don't have an account?{' '}
-            <Link to="/register" className="text-black font-medium hover:underline">
+            <Link to="/register" className="text-primary-600 font-medium hover:underline">
               Sign up
             </Link>
           </div>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PageHeader from '../components/ui/PageHeader';
 import { Link } from 'react-router-dom';
 import { 
   MapPin, Phone, Mail, Clock, Send,
-  MessageSquare, ArrowRight, CheckCircle, HelpCircle
+  ArrowRight, CheckCircle, HelpCircle
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { apiPost, ApiError } from '../api/client';
@@ -90,7 +91,7 @@ const Contact = () => {
     },
     {
       question: 'What is your return policy?',
-      answer: 'We offer a 30-day return policy for all unworn items with tags attached. Returns are free for orders over $50.'
+      answer: 'We offer a 30-day return policy for all unworn items with tags attached. Returns are free for orders over Rs 50.'
     },
     {
       question: 'Do you ship internationally?',
@@ -104,27 +105,12 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-secondary-50 via-surface to-background-light py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center bg-primary-100 text-primary-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Get in Touch
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-text-primary mb-6 leading-tight">
-              We'd Love to
-              <span className="block bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
-                Hear From You
-              </span>
-            </h1>
-            <p className="text-lg text-text-secondary leading-relaxed">
-              Have a question, suggestion, or just want to say hello? 
-              We're here to help and always happy to connect with our community.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Get in Touch"
+        title="We'd Love to Hear From You"
+        subtitle="Have a question, suggestion, or just want to say hello? We're here to help and always happy to connect with our community."
+        breadcrumb={[{ label: 'Home', to: '/' }, { label: 'Contact' }]}
+      />
 
       {/* Contact Info Cards */}
       <section className="py-16 bg-surface">

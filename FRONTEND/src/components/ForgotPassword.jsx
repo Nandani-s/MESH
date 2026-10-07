@@ -64,7 +64,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-surface to-background-light flex items-center justify-center py-12 px-4">
+    <div className="min-h-[70vh] bg-gradient-to-br from-primary-50 via-background to-accent-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-surface-light rounded-3xl shadow-2xl p-8 lg:p-10 border border-border-light">
 
@@ -82,14 +82,14 @@ export default function ForgotPassword() {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl mb-4 text-sm">
+            <div className="bg-danger-50 border border-danger-200 text-danger-600 p-3 rounded-xl mb-4 text-sm">
               {error}
             </div>
           )}
 
           {/* Success */}
           {message && (
-            <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded-xl mb-4 text-sm">
+            <div className="bg-success-50 border border-success-200 text-success-700 p-3 rounded-xl mb-4 text-sm">
               {message}
             </div>
           )}
@@ -112,7 +112,7 @@ export default function ForgotPassword() {
                     required
                     autoFocus
                     disabled={loading}
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-gray-100"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-background-muted"
                   />
                 </div>
               </div>
@@ -145,7 +145,7 @@ export default function ForgotPassword() {
                   required
                   autoFocus
                   disabled={loading}
-                  className="w-full text-center text-2xl tracking-[0.5em] font-bold py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-gray-100"
+                  className="w-full text-center text-2xl tracking-[0.5em] font-bold py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-background-muted"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export default function ForgotPassword() {
                     required
                     minLength={6}
                     disabled={loading}
-                    className="w-full pl-12 pr-12 py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-gray-100"
+                    className="w-full pl-12 pr-12 py-3.5 rounded-xl border-2 border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 outline-none disabled:bg-background-muted"
                   />
                   <button
                     type="button"

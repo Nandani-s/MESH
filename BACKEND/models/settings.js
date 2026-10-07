@@ -10,7 +10,7 @@ const settingsSchema = new mongoose.Schema(
     storeEmail: { type: String, default: "" },
     storePhone: { type: String, default: "" },
     storeAddress: { type: String, default: "" },
-    currency: { type: String, default: "USD" },
+    currency: { type: String, default: "NPR" },
     timezone: { type: String, default: "UTC" },
 
     // Payment — toggles only; actual API keys stay in .env

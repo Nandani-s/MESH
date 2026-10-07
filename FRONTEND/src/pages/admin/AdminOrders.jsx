@@ -1,8 +1,7 @@
 // pages/admin/AdminOrders.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Search, Eye, Truck, CheckCircle, Clock,
-  XCircle, ChevronDown, Package, User,
+  Search, Eye, ChevronDown, Package, User,
   MapPin, Phone, Mail, Loader2, AlertCircle, X
 } from 'lucide-react';
 import { apiGet, apiPut, ApiError } from '../../api/client';
@@ -11,7 +10,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 
 const STATUS_COLORS = {
   delivered: 'bg-green-100 text-green-800',
-  shipped: 'bg-blue-100 text-blue-800',
+  shipped: 'bg-primary-100 text-primary-800',
   processing: 'bg-yellow-100 text-yellow-800',
   pending: 'bg-orange-100 text-orange-800',
   cancelled: 'bg-gray-100 text-gray-800',
@@ -43,7 +42,7 @@ const AdminOrders = () => {
 	}
   };
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { Promise.resolve().then(fetchOrders); }, []);
 
   const updateStatus = async (orderId, orderStatus) => {
 	setUpdatingId(orderId);

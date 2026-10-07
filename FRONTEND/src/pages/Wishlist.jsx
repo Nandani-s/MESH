@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PageHeader from '../components/ui/PageHeader';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Heart, 
-  ShoppingBag, 
   Star, 
   X, 
   Trash2,
@@ -86,21 +86,12 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-background-light">
-      {/* Page Header */}
-      <section className="bg-gradient-to-br from-secondary-50 via-surface to-background-light py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center">
-            <div className="inline-flex items-center bg-accent-100 text-accent-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Heart className="w-4 h-4 mr-2 fill-accent-500 text-accent-500" />
-              My Favorites
-            </div>
-            <h1 className="text-4xl lg:text-5xl font-bold text-text-primary mb-4">My Wishlist</h1>
-            <p className="text-text-secondary">
-              {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved for later
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="My Favorites"
+        title="Wishlist"
+        subtitle={`${wishlistItems.length} ${wishlistItems.length === 1 ? 'item' : 'items'} saved for later`}
+        breadcrumb={[{ label: 'Home', to: '/' }, { label: 'Wishlist' }]}
+      />
 
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">

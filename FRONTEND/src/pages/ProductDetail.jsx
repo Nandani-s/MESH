@@ -1,16 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   Heart, ShoppingCart, Star, Package, ArrowLeft,
   Truck, Shield, RotateCcw, ChevronRight, Loader2,
-  AlertCircle, Minus, Plus, Share2
+  AlertCircle, Minus, Plus, Share2, ZoomIn
 } from 'lucide-react';
 import { productApi } from '../api/products';
+import { categoryApi } from '../api/categories';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import Breadcrumb from '../components/ui/Breadcrumb';
+import ProductCard from '../components/ui/ProductCard';
+
+const TABS = [
+  { id: 'description', label: 'Description' },
+  { id: 'details', label: 'Details' },
+  { id: 'shipping', label: 'Shipping & Returns' },
+];
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -20,33 +29,53 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { settings } = useSettings();
 
-  const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [detail, setDetail] = useState(null); // { productId, product, related, categorySlug }
+  const [failure, setFailure] = useState(null); // { productId, message }
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [activeTab, setActiveTab] = useState('description');
+
+  const isCurrent = detail && detail.productId === id;
+  const product = isCurrent ? detail.product : null;
+  const relatedProducts = isCurrent ? detail.related : [];
+  const categorySlug = isCurrent ? detail.categorySlug : null;
+  const error = failure && failure.productId === id ? failure.message : '';
+  const isLoading = !error && (!detail || !isCurrent);
 
   useEffect(() => {
-    setIsLoading(true);
-    setError('');
-    setQuantity(1);
+    let cancelled = false;
 
     Promise.all([
       productApi.getById(id),
       productApi.getAll(),
+      categoryApi.getAll(),
     ])
-      .then(([prodRes, allRes]) => {
+      .then(([prodRes, allRes, catRes]) => {
+        if (cancelled) return;
         const p = prodRes.data;
-        setProduct(p);
-        // Related: same category, different product, max 4
         const related = (allRes.data || [])
           .filter(r => r.category === p.category && r._id !== p._id)
           .slice(0, 4);
-        setRelatedProducts(related);
+        const cat = (catRes.data || []).find(
+          c => c.name?.toLowerCase() === (p.category || '').toLowerCase()
+        );
+        setDetail({
+          productId: id,
+          product: p,
+          related,
+          categorySlug: cat?.slug || null,
+        });
+        setFailure(null);
+        setQuantity(1);
+        setActiveTab('description');
       })
-      .catch(() => setError('Product not found.'))
-      .finally(() => setIsLoading(false));
+      .catch(() => {
+        if (!cancelled) setFailure({ productId: id, message: 'Product not found.' });
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleHeartClick = async () => {
@@ -98,38 +127,43 @@ const ProductDetail = () => {
   const currency = settings?.currency || 'NPR';
 
   return (
-    <div className="min-h-screen bg-background-light">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 text-sm text-text-muted">
-          <Link to="/" className="hover:text-primary-500 transition-colors">Home</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link to="/shop" className="hover:text-primary-500 transition-colors">Shop</Link>
-          {product.category && (
-            <>
-              <ChevronRight className="w-4 h-4" />
-              <Link to={`/category/${product.category.toLowerCase()}`}
-                className="hover:text-primary-500 transition-colors capitalize">{product.category}</Link>
-            </>
-          )}
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-text-primary truncate max-w-[200px]">{product.name}</span>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-2">
+        <Breadcrumb
+          items={[
+            { label: 'Shop', to: '/shop' },
+            ...(product.category
+              ? [
+                  {
+                    label: product.category,
+                    to: categorySlug ? `/category/${categorySlug}` : undefined,
+                  },
+                ]
+              : []),
+            { label: product.name },
+          ]}
+        />
       </div>
 
       {/* Main Product Section */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
           {/* Image */}
-          <div className="space-y-4">
-            <div className="relative rounded-3xl overflow-hidden aspect-square bg-gradient-to-br from-primary-50 to-accent-50 shadow-xl">
+          <div className="space-y-4 lg:sticky lg:top-36">
+            <div className="group relative rounded-3xl overflow-hidden aspect-square bg-gradient-to-br from-primary-50 to-accent-50 shadow-xl cursor-zoom-in">
               {product.image ? (
                 <img src={product.image} alt={product.name}
-                  className="w-full h-full object-cover" />
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Package className="w-32 h-32 text-primary-200" />
                 </div>
+              )}
+              {product.image && (
+                <span className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Hover to zoom">
+                  <ZoomIn className="w-4 h-4" />
+                </span>
               )}
               {isOnSale && (
                 <span className="absolute top-4 left-4 bg-danger-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
@@ -211,15 +245,15 @@ const ProductDetail = () => {
               </div>
               <div className="flex items-center gap-2 mt-3">
                 <span className={`px-3 py-1 text-sm rounded-full font-medium ${
-                  product.availability === 'InStock' ? 'bg-green-100 text-green-700' :
-                  product.availability === 'OutOfStock' ? 'bg-red-100 text-red-700' :
-                  'bg-yellow-100 text-yellow-700'
+                  product.availability === 'InStock' ? 'bg-success-100 text-success-700' :
+                  product.availability === 'OutOfStock' ? 'bg-danger-100 text-danger-700' :
+                  'bg-warning-100 text-warning-700'
                 }`}>
                   {product.availability === 'InStock' ? '✓ In Stock' :
                    product.availability === 'OutOfStock' ? '✗ Out of Stock' : '⏳ Pre-Order'}
                 </span>
                 {product.stock > 0 && product.stock <= 10 && (
-                  <span className="text-sm text-orange-600 font-medium">
+                  <span className="text-sm text-warning-600 font-medium">
                     Only {product.stock} left!
                   </span>
                 )}
@@ -260,28 +294,73 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Description */}
-            {product.description && (
-              <div>
-                <h3 className="font-semibold text-text-primary mb-2">Description</h3>
-                <p className="text-text-secondary leading-relaxed">{product.description}</p>
+            {/* Tabs */}
+            <div className="border border-border-light rounded-2xl overflow-hidden bg-surface-light">
+              <div className="flex border-b border-border-light" role="tablist">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 px-4 py-3.5 text-sm font-semibold transition-colors relative ${
+                      activeTab === tab.id
+                        ? 'text-primary-600 bg-primary-50'
+                        : 'text-text-muted hover:text-text-primary hover:bg-background-muted'
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-accent-500" />
+                    )}
+                  </button>
+                ))}
               </div>
-            )}
 
-            {/* Product Details */}
-            <div className="bg-surface-light rounded-2xl p-5 border border-border-light space-y-3">
-              <h3 className="font-semibold text-text-primary">Product Details</h3>
-              {[
-                { label: 'Brand', value: product.brand },
-                { label: 'Category', value: product.category },
-                { label: 'Stock', value: `${product.stock} units` },
-                { label: 'Currency', value: product.priceCurrency || 'USD' },
-              ].map(({ label, value }) => value && (
-                <div key={label} className="flex justify-between text-sm">
-                  <span className="text-text-muted">{label}</span>
-                  <span className="text-text-primary font-medium">{value}</span>
-                </div>
-              ))}
+              <div className="p-5">
+                {activeTab === 'description' && (
+                  <p className="text-text-secondary leading-relaxed whitespace-pre-line">
+                    {product.description || 'No description available for this product yet.'}
+                  </p>
+                )}
+
+                {activeTab === 'details' && (
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Brand', value: product.brand },
+                      { label: 'Category', value: product.category },
+                      { label: 'Stock', value: product.stock != null ? `${product.stock} units` : null },
+                      { label: 'SKU', value: product._id?.slice(-8).toUpperCase() },
+                      { label: 'Currency', value: settings.currency },
+                    ].map(({ label, value }) => value && (
+                      <div key={label} className="flex justify-between text-sm">
+                        <span className="text-text-muted">{label}</span>
+                        <span className="text-text-primary font-medium">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === 'shipping' && (
+                  <ul className="space-y-3 text-sm text-text-secondary">
+                    <li className="flex items-start gap-3">
+                      <Truck className="w-4 h-4 mt-0.5 text-primary-500 shrink-0" />
+                      {settings.freeShippingThreshold > 0
+                        ? `Free shipping on orders over ${formatCurrency(settings.freeShippingThreshold, settings.currency)}.`
+                        : 'Free shipping on all orders.'}
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <RotateCcw className="w-4 h-4 mt-0.5 text-primary-500 shrink-0" />
+                      Easy 30-day returns — unused items with tags attached.
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Shield className="w-4 h-4 mt-0.5 text-primary-500 shrink-0" />
+                      Pay on delivery, or securely with Khalti and eSewa.
+                    </li>
+                  </ul>
+                )}
+              </div>
             </div>
 
             {/* Feature Highlights */}
@@ -302,58 +381,25 @@ const ProductDetail = () => {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-20">
+          <div className="mt-16 lg:mt-20">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-text-primary">Related Products</h2>
-              <Link to={`/category/${product.category?.toLowerCase()}`}
-                className="text-sm text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                View all <ChevronRight className="w-4 h-4" />
-              </Link>
+              <div>
+                <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-primary-500 mb-2">
+                  You may also like
+                </span>
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-text-primary">Related Products</h2>
+              </div>
+              {categorySlug && (
+                <Link to={`/category/${categorySlug}`}
+                  className="text-sm text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
+                  View all <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedProducts.map((related) => {
-                const relInWishlist = isInWishlist(related._id);
-                const relOnSale = related.originalPrice && related.originalPrice > related.price;
-                return (
-                  <Link key={related._id} to={`/product/${related._id}`}
-                    className="group bg-surface-light rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 border border-border-light hover:border-primary-200">
-                    <div className="relative overflow-hidden aspect-[3/4]">
-                      {related.image ? (
-                        <img src={related.image} alt={related.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
-                          <Package className="w-12 h-12 text-primary-200" />
-                        </div>
-                      )}
-                      {relOnSale && (
-                        <span className="absolute top-2 left-2 bg-danger-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">
-                          -{Math.round(((related.originalPrice - related.price) / related.originalPrice) * 100)}%
-                        </span>
-                      )}
-                      <button
-                        onClick={(e) => { e.preventDefault(); if (!isAuthenticated) { navigate('/login'); return; } toggleWishlist(related); }}
-                        className={`absolute top-2 right-2 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg ${
-                          relInWishlist ? 'bg-danger-500 text-white opacity-100' : 'bg-white/95 text-text-primary hover:text-danger-500'
-                        }`}>
-                        <Heart className={`w-4 h-4 ${relInWishlist ? 'fill-current' : ''}`} />
-                      </button>
-                    </div>
-                    <div className="p-3">
-                      <p className="text-xs text-text-muted mb-1">{related.brand}</p>
-                      <h3 className="font-semibold text-text-primary text-sm mb-1 line-clamp-1">{related.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${relOnSale ? 'text-danger-600' : 'text-primary-600'}`}>
-                          {formatCurrency(related.price, currency)}
-                        </span>
-                        {relOnSale && (
-                          <span className="text-xs text-text-muted line-through">{formatCurrency(related.originalPrice, currency)}</span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+              {relatedProducts.map((related) => (
+                <ProductCard key={related._id} product={related} />
+              ))}
             </div>
           </div>
         )}

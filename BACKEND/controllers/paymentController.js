@@ -3,7 +3,7 @@ import { Order } from "../models/order.js";
 import sendEmail from "../utils/sendEmail.js";
 
 // Fallback URLs in case .env isn't loaded
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5001";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // ─── KHALTI ───

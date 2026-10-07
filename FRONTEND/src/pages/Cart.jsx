@@ -1,13 +1,13 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag, Trash2, Plus, Minus, ArrowRight,
-  ArrowLeft, ShoppingCart, Loader2, Tag
+  ShoppingCart, Loader2, Tag, ShieldCheck
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import PageHeader from '../components/ui/PageHeader';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Cart = () => {
   );
 
   if (!isAuthenticated) return (
-    <div className="min-h-screen bg-background-light flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="text-center">
         <ShoppingCart className="w-20 h-20 text-primary-300 mx-auto mb-6" />
         <h2 className="text-2xl font-bold text-text-primary mb-3">Sign in to view your cart</h2>
@@ -49,29 +49,24 @@ const Cart = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background-light">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <section className="bg-gradient-to-br from-secondary-50 via-surface to-background-light py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <Link to="/shop" className="inline-flex items-center gap-2 text-text-muted hover:text-primary-500 text-sm mb-4 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Continue Shopping
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-text-primary">Shopping Cart</h1>
-              <p className="text-text-muted mt-1">{cartCount} {cartCount === 1 ? 'item' : 'items'}</p>
-            </div>
-            {items.length > 0 && (
-              <button onClick={clearCart}
-                className="text-sm text-danger-500 hover:text-danger-600 flex items-center gap-1 transition-colors">
-                <Trash2 className="w-4 h-4" /> Clear Cart
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Your Bag"
+        title="Shopping Cart"
+        subtitle={`${cartCount} ${cartCount === 1 ? 'item' : 'items'} ready for checkout`}
+        breadcrumb={[{ label: 'Cart' }]}
+        action={
+          items.length > 0 ? (
+            <button onClick={clearCart}
+              className="text-sm text-danger-500 hover:text-danger-600 flex items-center gap-1 transition-colors font-medium">
+              <Trash2 className="w-4 h-4" /> Clear Cart
+            </button>
+          ) : null
+        }
+      />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {items.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag className="w-20 h-20 text-border mx-auto mb-6" />
@@ -160,6 +155,7 @@ const Cart = () => {
                         {/* Quantity */}
                         <div className="flex items-center border border-border-light rounded-xl overflow-hidden">
                           <button
+                            aria-label="Decrease quantity"
                             onClick={() => {
                               if (item.quantity === 1) removeFromCart(product._id);
                               else updateQuantity(product._id, item.quantity - 1);
@@ -167,10 +163,12 @@ const Cart = () => {
                             className="px-3 py-1.5 hover:bg-background-muted transition-colors">
                             <Minus className="w-3.5 h-3.5" />
                           </button>
-                          <span className="px-4 py-1.5 font-semibold text-sm border-x border-border-light min-w-[40px] text-center">
+                          <span className="px-4 py-1.5 font-semibold text-sm border-x border-border-light min-w-[40px] text-center"
+                            title={`Quantity: ${item.quantity}`}>
                             {item.quantity}
                           </span>
                           <button
+                            aria-label="Increase quantity"
                             onClick={() => updateQuantity(product._id, item.quantity + 1)}
                             className="px-3 py-1.5 hover:bg-background-muted transition-colors">
                             <Plus className="w-3.5 h-3.5" />
@@ -187,7 +185,7 @@ const Cart = () => {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-surface-light rounded-2xl border border-border-light p-6 sticky top-6">
+              <div className="bg-surface-light rounded-2xl border border-border-light p-6 sticky top-28 lg:top-36">
                 <h2 className="text-xl font-bold text-text-primary mb-6">Order Summary</h2>
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
@@ -220,20 +218,22 @@ const Cart = () => {
 
                 {/* Payment icons */}
                 <div className="mt-6 pt-4 border-t border-border-light">
-                  <p className="text-xs text-text-muted text-center mb-3">Secure Payment Options</p>
-                  <div className="flex justify-center gap-3 flex-wrap">
+                  <p className="text-xs text-text-muted text-center mb-3 flex items-center justify-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Secure Payment Options
+                  </p>
+                  <div className="flex justify-center gap-2 flex-wrap">
                     {settings.codEnabled && (
                       <span className="px-3 py-1.5 bg-background-muted rounded-lg text-xs font-medium text-text-secondary">
                         Cash on Delivery
                       </span>
                     )}
                     {settings.khaltiEnabled && (
-                      <span className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium">
+                      <span className="px-3 py-1.5 bg-background-muted rounded-lg text-xs font-medium text-text-secondary">
                         Khalti
                       </span>
                     )}
                     {settings.esewaEnabled && (
-                      <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+                      <span className="px-3 py-1.5 bg-background-muted rounded-lg text-xs font-medium text-text-secondary">
                         eSewa
                       </span>
                     )}

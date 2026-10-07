@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Loader2, AlertCircle, Package } from 'lucide-react';
+import { ArrowRight, Loader2, AlertCircle, Package } from 'lucide-react';
+import PageHeader from '../components/ui/PageHeader';
 import { categoryApi } from '../api/categories';
 
 const Categories = () => {
@@ -33,24 +34,16 @@ const Categories = () => {
 
   return (
     <div className="min-h-screen bg-background-light">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-secondary-50 via-surface to-background-light py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center bg-primary-100 text-primary-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Browse Categories
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-text-primary mb-4">Shop by Category</h1>
-            <p className="text-lg text-text-secondary">
-              Explore our curated collections and find exactly what you're looking for
-            </p>
-            {!isLoading && !error && (
-              <p className="text-text-muted mt-2">{categories.length} categories available</p>
-            )}
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Browse Categories"
+        title="Shop by Category"
+        subtitle="Explore our curated collections and find exactly what you're looking for"
+        breadcrumb={[{ label: 'Home', to: '/' }, { label: 'Categories' }]}
+      >
+        {!isLoading && !error && (
+          <p className="mt-4 text-sm text-text-muted">{categories.length} categories available</p>
+        )}
+      </PageHeader>
 
       {/* Loading */}
       {isLoading && (

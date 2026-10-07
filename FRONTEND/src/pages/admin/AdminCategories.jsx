@@ -1,5 +1,5 @@
 // pages/admin/AdminCategories.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Plus, 
   Edit, 
@@ -44,7 +44,7 @@ const AdminCategories = () => {
   };
 
   useEffect(() => {
-	fetchCategories();
+	Promise.resolve().then(fetchCategories);
   }, []);
 
   const handleOpenModal = (category = null) => {
@@ -103,6 +103,8 @@ const AdminCategories = () => {
 	  setBusyCategoryId(null);
 	}
   };
+
+  const isImageUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
 
   const filteredCategories = categories.filter(category =>
 	category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,9 +180,17 @@ const AdminCategories = () => {
 			<div className="p-6">
 			  <div className="flex items-start justify-between mb-4">
 				<div className="flex items-center gap-3">
-				  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center text-2xl">
-					{category.image || '📦'}
-				  </div>
+				  {isImageUrl(category.image) ? (
+					<img
+					  src={category.image}
+					  alt={category.name}
+					  className="w-12 h-12 rounded-xl object-cover border border-border-light"
+					/>
+				  ) : (
+					<div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center text-2xl">
+					  {category.image || '📦'}
+					</div>
+				  )}
 				  <div>
 					<h3 className="font-semibold text-text-primary">{category.name}</h3>
 					<p className="text-xs text-text-muted">{category.slug}</p>
@@ -211,9 +221,9 @@ const AdminCategories = () => {
 				<div className="flex items-center justify-between">
 				  <span className="text-text-muted">Status</span>
 				  <span className={`px-2 py-1 text-xs rounded-full ${
-					category.status === 'active' 
-					  ? 'bg-green-100 text-green-800' 
-					  : 'bg-red-100 text-red-800'
+					category.status === 'active'
+					  ? 'bg-success-50 text-success-700'
+					  : 'bg-danger-50 text-danger-700'
 				  }`}>
 					{category.status}
 				  </span>
@@ -259,14 +269,27 @@ const AdminCategories = () => {
 				/>
 			  </div>
 			  <div>
-				<label className="block text-sm font-medium text-text-primary mb-2">Icon/Emoji</label>
+				<label className="block text-sm font-medium text-text-primary mb-2">Image URL or Emoji</label>
 				<input
 				  type="text"
 				  value={formData.image}
 				  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-				  placeholder="📱"
+				  placeholder="https://… or an emoji"
 				  className="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary"
 				/>
+				{formData.image && (
+				  <div className="mt-2">
+					{isImageUrl(formData.image) ? (
+					  <img
+						src={formData.image}
+						alt="Category preview"
+						className="w-16 h-16 rounded-lg object-cover border border-border-light"
+					  />
+					) : (
+					  <span className="text-3xl">{formData.image}</span>
+					)}
+				  </div>
+				)}
 			  </div>
 			  <div>
 				<label className="block text-sm font-medium text-text-primary mb-2">Description</label>

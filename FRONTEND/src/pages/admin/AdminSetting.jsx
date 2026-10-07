@@ -1,5 +1,5 @@
 // pages/admin/AdminSettings.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Save, Globe, DollarSign, Shield, Bell,
   CreditCard, Truck, Loader2, AlertCircle, Check

@@ -1,5 +1,5 @@
 // pages/admin/AdminProducts.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   Edit,
@@ -86,11 +86,13 @@ const AdminProducts = () => {
 		.filter((c) => c.status === 'active')
 		.map((c) => c.name);
 	  if (activeCategories.length > 0) setCategories(activeCategories);
-	} catch {}
+	} catch {
+	  return;
+	}
   };
 
   useEffect(() => {
-	fetchProducts();
+	Promise.resolve().then(fetchProducts);
   }, []);
 
   const handleOpenModal = (product = null) => {

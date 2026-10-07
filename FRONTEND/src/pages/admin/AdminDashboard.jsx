@@ -1,16 +1,18 @@
 // pages/admin/AdminDashboard.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingCart, Package, Users, Heart,
-  TrendingUp, Star, AlertTriangle, Loader2,
-  AlertCircle, UserPlus, ImageOff, Tag
+  TrendingUp, AlertTriangle, Loader2,
+  AlertCircle, ImageOff, Tag
 } from 'lucide-react';
 import { apiGet } from '../../api/client';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+
+const NOW = Date.now();
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -32,7 +34,7 @@ const AdminDashboard = () => {
   };
 
   const timeAgo = (dateStr) => {
-    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    const diff = Math.floor((NOW - new Date(dateStr)) / 1000);
     if (diff < 60) return 'just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -76,7 +78,7 @@ const AdminDashboard = () => {
             {[
               { title: 'Total Products', value: data.counts.products, icon: Package, gradient: 'from-purple-500 to-purple-600', link: '/admin/products' },
               { title: 'Total Users', value: data.counts.users, icon: Users, gradient: 'from-orange-500 to-orange-600', link: '/admin/users' },
-              { title: 'Categories', value: data.counts.categories, icon: Tag, gradient: 'from-blue-500 to-blue-600', link: '/admin/categories' },
+              { title: 'Categories', value: data.counts.categories, icon: Tag, gradient: 'from-primary-500 to-primary-600', link: '/admin/categories' },
               { title: 'Wishlist Items', value: data.counts.wishlistItems, icon: Heart, gradient: 'from-pink-500 to-pink-600', link: '/admin/wishlist' },
             ].map(({ title, value, icon: Icon, gradient, link }) => (
               <Link key={title} to={link}
@@ -101,7 +103,7 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
               { title: 'Total Revenue', icon: ShoppingCart, color: 'from-green-500 to-green-600' },
-              { title: 'Total Orders', icon: ShoppingCart, color: 'from-blue-500 to-blue-600' },
+              { title: 'Total Orders', icon: ShoppingCart, color: 'from-primary-500 to-primary-600' },
             ].map(({ title, icon: Icon, color }) => (
               <div key={title} className="bg-surface-light rounded-xl shadow-sm border border-border-light p-6 flex items-center justify-between opacity-60">
                 <div>
@@ -180,7 +182,7 @@ const AdminDashboard = () => {
                         <p className="text-xs text-text-muted truncate">{u.email}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-primary-100 text-primary-700'}`}>
                           {u.role === 'admin' ? 'Admin' : 'Customer'}
                         </span>
                         <span className="text-xs text-text-muted">{timeAgo(u.createdAt)}</span>

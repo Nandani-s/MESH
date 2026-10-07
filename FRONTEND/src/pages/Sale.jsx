@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PageHeader from '../components/ui/PageHeader';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Star, Heart, Timer, Zap, Tag,
-  Percent, Flame, ArrowRight, Loader2, Package
+  Heart, Zap, Tag,
+  Percent, ArrowRight, Loader2, Package
 } from 'lucide-react';
 import { productApi } from '../api/products';
 import { useWishlist } from '../context/WishlistContext';
@@ -76,53 +77,36 @@ const Sale = () => {
 
   return (
 	<div className="min-h-screen bg-background-light">
-	  {/* Hero */}
-	  <section className="relative bg-gradient-to-br from-danger-50 via-surface to-background-light py-20 overflow-hidden">
-		<div className="max-w-7xl mx-auto px-4 relative z-10">
-		  <div className="max-w-3xl">
-			<div className="inline-flex items-center bg-danger-100 text-danger-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-			  <Flame className="w-4 h-4 mr-2" />
-			  Limited Time Sale
+	  <PageHeader
+		eyebrow="Limited Time Sale"
+		title={saleProducts.length > 0 ? `Up to ${Math.max(...saleProducts.map(getDiscount))}% Off` : 'Sale Coming Soon'}
+		subtitle={saleProducts.length > 0 ? `${saleProducts.length} products on sale — shop before time runs out!` : 'Check back soon for our next big sale event.'}
+		breadcrumb={[{ label: 'Sale' }]}
+	  >
+		{/* Countdown */}
+		<div className="mt-4 flex flex-wrap gap-3">
+		  {[
+			{ value: timeLeft.days, label: 'Days' },
+			{ value: timeLeft.hours, label: 'Hours' },
+			{ value: timeLeft.minutes, label: 'Mins' },
+			{ value: timeLeft.seconds, label: 'Secs' },
+		  ].map((item, index) => (
+			<div key={index} className="text-center">
+			  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-surface-light rounded-lg shadow-sm flex items-center justify-center border border-border-light">
+				<span className="text-lg lg:text-xl font-bold text-danger-600 tabular-nums">
+				  {String(item.value).padStart(2, '0')}
+				</span>
+			  </div>
+			  <span className="text-[11px] text-text-muted mt-1 block">{item.label}</span>
 			</div>
-			<h1 className="text-4xl lg:text-7xl font-bold text-text-primary mb-6">
-			  {saleProducts.length > 0
-				? `Up to ${Math.max(...saleProducts.map(getDiscount))}% Off`
-				: 'Sale Coming Soon'}
-			</h1>
-			<p className="text-lg text-text-secondary mb-8 max-w-xl">
-			  {saleProducts.length > 0
-				? `${saleProducts.length} products on sale — shop before time runs out!`
-				: "Check back soon for our next big sale event."}
-			</p>
-
-			{/* Countdown */}
-			<div className="flex gap-4 mb-8">
-			  {[
-				{ value: timeLeft.days, label: 'Days' },
-				{ value: timeLeft.hours, label: 'Hours' },
-				{ value: timeLeft.minutes, label: 'Mins' },
-				{ value: timeLeft.seconds, label: 'Secs' },
-			  ].map((item, index) => (
-				<div key={index} className="text-center">
-				  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-surface-light rounded-2xl shadow-lg flex items-center justify-center border border-border-light">
-					<span className="text-2xl lg:text-3xl font-bold text-primary-600 tabular-nums">
-					  {String(item.value).padStart(2, '0')}
-					</span>
-				  </div>
-				  <span className="text-xs text-text-muted mt-2 block">{item.label}</span>
-				</div>
-			  ))}
-			</div>
-
-			<a href="#deals"
-			  className="inline-flex items-center gap-2 bg-danger-500 hover:bg-danger-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-danger-500/25">
-			  Shop Sale
-			  <ArrowRight className="w-5 h-5" />
-			</a>
-		  </div>
+		  ))}
 		</div>
-		<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-danger-100 rounded-full filter blur-3xl opacity-50" />
-	  </section>
+		<a href="#deals"
+		  className="mt-4 inline-flex items-center gap-2 bg-danger-500 hover:bg-danger-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-lg">
+		  Shop Sale
+		  <ArrowRight className="w-5 h-5" />
+		</a>
+	  </PageHeader>
 
 	  {/* Loading */}
 	  {isLoading && (
@@ -149,7 +133,7 @@ const Sale = () => {
 					<Link key={deal._id} to={`/product/${deal._id}`}
 					  className="bg-surface-light rounded-2xl p-5 border border-border-light hover:border-warning-300 hover:shadow-xl transition-all duration-300 block">
 					  <div className="flex gap-4 mb-4">
-						<div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-background-muted">
+						<div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-background-muted">
 						  {deal.image ? (
 							<img src={deal.image} alt={deal.name} className="w-full h-full object-cover" />
 						  ) : (
@@ -170,7 +154,7 @@ const Sale = () => {
 						</div>
 					  </div>
 					  <div className="w-full bg-background-muted rounded-full h-2">
-						<div className="bg-gradient-to-r from-warning-500 to-danger-500 h-2 rounded-full"
+						<div className="bg-linear-to-r from-warning-500 to-danger-500 h-2 rounded-full"
 						  style={{ width: `${Math.min(((deal.aggregateRating?.reviewCount || 0) / 100) * 100, 85)}%` }} />
 					  </div>
 					  <p className="text-xs text-text-muted mt-1">
@@ -205,44 +189,39 @@ const Sale = () => {
 				  </Link>
 				</div>
 			  ) : (
-				<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
 				  {mainSale.map((product) => {
 					const inWishlist = isInWishlist(product._id);
 					const discount = getDiscount(product);
 					return (
 					  <Link key={product._id} to={`/product/${product._id}`}
-						className="group bg-surface-light rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-border-light hover:border-danger-200">
-						<div className="relative overflow-hidden aspect-[3/4]">
+						className="group flex h-full flex-col bg-surface-light rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 border border-border-light hover:border-danger-200">
+						<div className="relative overflow-hidden aspect-square bg-background-muted">
 						  {product.image ? (
 							<img src={product.image} alt={product.name}
-							  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+							  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
 						  ) : (
-							<div className="w-full h-full bg-gradient-to-br from-danger-50 to-accent-50 flex items-center justify-center">
-							  <Package className="w-16 h-16 text-danger-200" />
+							<div className="w-full h-full bg-linear-to-br from-danger-50 to-accent-50 flex items-center justify-center">
+							  <Package className="w-12 h-12 text-danger-200" />
 							</div>
 						  )}
-						  <span className="absolute top-3 left-3 bg-danger-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+						  <span className="absolute top-2 left-2 bg-danger-500 text-white px-2 py-1 rounded-md text-[10px] font-bold">
 							-{discount}%
 						  </span>
-						  <button onClick={(e) => handleHeartClick(e, product)}
-							className={`absolute top-3 right-3 p-2.5 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-110 ${
-							  inWishlist ? 'bg-danger-500 text-white opacity-100' : 'bg-white/95 text-text-primary hover:text-danger-500'
+						  <button type="button" onClick={(e) => handleHeartClick(e, product)}
+							className={`absolute top-2 right-2 p-2 backdrop-blur-sm rounded-full transition-colors duration-200 ${
+							  inWishlist ? 'bg-danger-500 text-white' : 'bg-white/95 text-text-primary hover:text-danger-500'
 							}`}>
-							<Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
+							<Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
 						  </button>
-						  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-							<span className="block w-full text-center bg-white text-text-primary py-2.5 rounded-xl font-semibold hover:bg-danger-500 hover:text-white transition-all text-sm">
-							  Quick View
-							</span>
-						  </div>
 						</div>
-						<div className="p-4">
-						  <p className="text-xs text-text-muted mb-1">{product.category} · {product.brand}</p>
-						  <h3 className="font-semibold text-text-primary mb-2 line-clamp-1">{product.name}</h3>
+						<div className="p-3 flex flex-1 flex-col">
+						  <p className="text-[10px] uppercase tracking-wide text-text-muted mb-1">{product.category} · {product.brand}</p>
+						  <h3 className="text-sm font-semibold text-text-primary mb-2 line-clamp-1">{product.name}</h3>
 						  <div className="flex items-center gap-2">
-							<span className="text-xl font-bold text-danger-600">{formatCurrency(product.price, settings.currency)}</span>
-							<span className="text-sm text-text-muted line-through">{formatCurrency(product.originalPrice, settings.currency)}</span>
-							<span className="ml-auto bg-danger-100 text-danger-600 px-2 py-0.5 rounded-lg text-xs font-semibold">
+							<span className="text-sm font-bold text-danger-600">{formatCurrency(product.price, settings.currency)}</span>
+							<span className="text-xs text-text-muted line-through">{formatCurrency(product.originalPrice, settings.currency)}</span>
+							<span className="ml-auto bg-danger-100 text-danger-600 px-1.5 py-0.5 rounded-md text-[10px] font-semibold">
 							  -{discount}%
 							</span>
 						  </div>
@@ -258,11 +237,11 @@ const Sale = () => {
 	  )}
 
 	  {/* Promo Banner */}
-	  <section className="py-16 bg-gradient-to-br from-danger-500 via-danger-600 to-accent-500">
+	  <section className="py-16 bg-linear-to-br from-danger-500 via-danger-600 to-accent-500">
 		<div className="max-w-7xl mx-auto px-4 text-center">
 		  <Percent className="w-16 h-16 text-white/80 mx-auto mb-4" />
 		  <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-			Extra 10% Off on Orders Over $200
+			Extra 10% Off on Orders Over Rs 200
 		  </h2>
 		  <p className="text-white/90 text-lg mb-8">
 			Use code: <span className="font-bold bg-white/20 px-4 py-1 rounded-lg">EXTRA10</span>

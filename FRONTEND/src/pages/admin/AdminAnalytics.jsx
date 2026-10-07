@@ -1,12 +1,12 @@
 // pages/admin/AdminAnalytics.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TrendingUp, DollarSign, ShoppingCart, Package,
-  Users, ArrowUp, Loader2, AlertCircle, BarChart3
+  Users, Loader2, AlertCircle, BarChart3
 } from 'lucide-react';
 import { apiGet, ApiError } from '../../api/client';
 
-const CATEGORY_COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ec4899','#8b5cf6'];
+const CATEGORY_COLORS = ['#087F5B','#12B886','#f59e0b','#065A41','#ec4899','#8E8E84'];
 const AVAILABILITY_COLORS = { InStock: '#10b981', OutOfStock: '#ef4444', PreOrder: '#f59e0b' };
 
 const AdminAnalytics = () => {
@@ -67,7 +67,7 @@ const AdminAnalytics = () => {
               { title: 'Total Products', value: data.totals.products.toLocaleString(), icon: Package, color: 'from-purple-500 to-purple-600', real: true },
               { title: 'Total Users', value: data.totals.users.toLocaleString(), icon: Users, color: 'from-orange-500 to-orange-600', real: true },
               { title: 'Total Revenue', value: '—', icon: DollarSign, color: 'from-green-500 to-green-600', real: false },
-              { title: 'Total Orders', value: '—', icon: ShoppingCart, color: 'from-blue-500 to-blue-600', real: false },
+              { title: 'Total Orders', value: '—', icon: ShoppingCart, color: 'from-primary-500 to-primary-600', real: false },
             ].map(({ title, value, icon: Icon, color, real }) => (
               <div key={title} className={`bg-surface-light rounded-xl shadow-sm border border-border-light p-6 ${!real ? 'opacity-50' : ''}`}>
                 <div className="flex items-center justify-between">

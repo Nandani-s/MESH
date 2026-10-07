@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { settingsApi } from '../api/settings';
 
 const SettingsContext = createContext(undefined);
@@ -34,7 +34,9 @@ export function SettingsProvider({ children }) {
 	try {
 	  const res = await settingsApi.get();
 	  setSettings(res.data);
-	} catch {}
+	} catch {
+	  return;
+	}
   };
 
   return (

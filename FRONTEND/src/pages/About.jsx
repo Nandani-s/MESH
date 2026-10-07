@@ -1,8 +1,8 @@
-import React from 'react';
+import PageHeader from '../components/ui/PageHeader';
 import { Link } from 'react-router-dom';
 import { 
   Heart, Star, Shield, Truck, Users, Award,
-  ArrowRight, CheckCircle, Quote
+  ArrowRight, Quote
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
@@ -56,42 +56,29 @@ const About = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-secondary-50 via-surface to-background-light py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center bg-primary-100 text-primary-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Heart className="w-4 h-4 mr-2 fill-primary-500 text-primary-500" />
-              Our Story
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-text-primary mb-6 leading-tight">
-              We Believe Fashion is
-              <span className="block bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
-                for Everyone
-              </span>
-            </h1>
-            <p className="text-lg text-text-secondary leading-relaxed mb-8">
-              {storeName} was born from a simple idea: that every woman deserves to feel 
-              confident and beautiful in what she wears, without compromising on quality or breaking the bank.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                to="/shop"
-                className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-primary-500/25 flex items-center gap-2"
-              >
-                Shop Now
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/contact"
-                className="border-2 border-border-strong hover:border-primary-500 text-text-primary px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:bg-primary-50"
-              >
-                Contact Us
-              </Link>
-            </div>
+      <PageHeader
+        eyebrow="Our Story"
+        title="We Believe Fashion Is for Everyone"
+        subtitle={`${storeName} was born from a simple idea: that every woman deserves to feel confident and beautiful in what she wears, without compromising on quality or breaking the bank.`}
+        breadcrumb={[{ label: 'Home', to: '/' }, { label: 'About' }]}
+        action={
+          <div className="flex flex-wrap gap-4">
+            <Link
+              to="/shop"
+              className="bg-accent-500 hover:bg-accent-600 text-text-primary px-7 py-3.5 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center gap-2"
+            >
+              Shop Now
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/contact"
+              className="border-2 border-border-strong hover:border-primary-500 text-text-primary px-7 py-3.5 rounded-xl font-semibold transition-all duration-300 hover:bg-primary-50"
+            >
+              Contact Us
+            </Link>
           </div>
-        </div>
-      </section>
+        }
+      />
 
       {/* Stats Section */}
       <section className="py-16 bg-surface">

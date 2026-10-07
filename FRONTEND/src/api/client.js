@@ -1,14 +1,14 @@
 // Centralized API client.
 //
 // Why this exists: without it, every component would hardcode its own
-// `fetch('http://localhost:5000/api/...')` call, repeat the
+// `fetch('http://localhost:5001/api/...')` call, repeat the
 // `credentials: 'include'` option, and parse errors differently. One place
 // to change the base URL (e.g. for staging/prod) and one error shape for
 // every component to handle.
 
-// Set VITE_API_URL in your frontend .env (e.g. VITE_API_URL=http://localhost:5000/api).
-// Falls back to localhost:5000 so it still works if you haven't added the env var yet.
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Set VITE_API_URL in your frontend .env (e.g. VITE_API_URL=http://localhost:5001/api).
+// Falls back to localhost:5001 so it still works if you haven't added the env var yet.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 export class ApiError extends Error {
   constructor(message, status, data) {

@@ -1,8 +1,14 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
+  const mongoUri = process.env.MONGODBURI || process.env.mongodb;
+
+  if (!mongoUri) {
+    throw new Error("MongoDB connection string is missing. Set MONGODBURI in .env.");
+  }
+
   try {
-    await mongoose.connect(process.env.mongodb);
+    await mongoose.connect(mongoUri);
 
     console.log("✅ MongoDB Connected");
   } catch (error) {
