@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Heart, 
   ShoppingBag, 
@@ -10,86 +10,68 @@ import {
   ShoppingCart,
   Share2,
   Gift,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const Wishlist = () => {
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 1,
-      name: 'Floral Summer Dress',
-      price: 89.99,
-      originalPrice: 129.99,
-      rating: 4.8,
-      reviews: 124,
-      image: '/api/placeholder/300/400',
-      inStock: true,
-      dateAdded: '2024-12-01',
-      discount: 30
-    },
-    {
-      id: 2,
-      name: 'Designer Handbag',
-      price: 199.99,
-      originalPrice: 249.99,
-      rating: 4.9,
-      reviews: 67,
-      image: '/api/placeholder/300/400',
-      inStock: true,
-      dateAdded: '2024-11-28',
-      discount: 20
-    },
-    {
-      id: 3,
-      name: 'Elegant Evening Gown',
-      price: 149.99,
-      rating: 4.9,
-      reviews: 89,
-      image: '/api/placeholder/300/400',
-      inStock: false,
-      dateAdded: '2024-11-25'
-    },
-    {
-      id: 4,
-      name: 'Cashmere Cardigan',
-      price: 249.99,
-      originalPrice: 299.99,
-      rating: 4.7,
-      reviews: 56,
-      image: '/api/placeholder/300/400',
-      inStock: true,
-      dateAdded: '2024-12-03',
-      discount: 17
-    },
-    {
-      id: 5,
-      name: 'Silk Cami Top',
-      price: 69.99,
-      rating: 4.6,
-      reviews: 198,
-      image: '/api/placeholder/300/400',
-      inStock: true,
-      dateAdded: '2024-11-30'
-    },
-  ]);
-
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { settings } = useSettings();
+  const { items, isLoading, toggleWishlist, clearWishlist } = useWishlist();
   const [sortBy, setSortBy] = useState('recent');
 
-  const removeItem = (id) => {
-    setWishlistItems(items => items.filter(item => item.id !== id));
-  };
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background-light flex items-center justify-center">
+        <div className="text-center py-20">
+          <div className="w-24 h-24 bg-accent-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Heart className="w-12 h-12 text-accent-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-text-primary mb-3">Sign in to view your wishlist</h2>
+          <p className="text-text-muted mb-8">Save your favorite items and access them anytime.</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300"
+          >
+            Sign In
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const moveToCart = (id) => {
-    // Here you would typically add to cart and remove from wishlist
-    console.log('Moving item to cart:', id);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-light flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
+      </div>
+    );
+  }
+
+  const removeItem = (product) => toggleWishlist(product);
+
+  // Map populated wishlist items to a flat shape the UI expects
+  const wishlistItems = items.map((item) => ({
+    ...item.product,
+    addedAt: item.addedAt,
+    inStock: item.product?.availability === 'InStock',
+    rating: item.product?.aggregateRating?.ratingValue || 0,
+    reviews: item.product?.aggregateRating?.reviewCount || 0,
+  }));
 
   const sortedItems = [...wishlistItems].sort((a, b) => {
     switch (sortBy) {
       case 'recent':
-        return new Date(b.dateAdded) - new Date(a.dateAdded);
+        return new Date(b.addedAt) - new Date(a.addedAt);
       case 'oldest':
-        return new Date(a.dateAdded) - new Date(b.dateAdded);
+        return new Date(a.addedAt) - new Date(b.addedAt);
       case 'price-low':
         return a.price - b.price;
       case 'price-high':
@@ -148,6 +130,13 @@ const Wishlist = () => {
                   <span className="text-sm text-text-muted">
                     {wishlistItems.length} items
                   </span>
+                  <button
+                    onClick={clearWishlist}
+                    className="text-sm text-danger-500 hover:text-danger-600 flex items-center gap-1 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear all
+                  </button>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -179,12 +168,12 @@ const Wishlist = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {inStockItems.map((item) => (
                       <div
-                        key={item.id}
+                        key={item._id}
                         className="group bg-surface-light rounded-2xl overflow-hidden border border-border-light hover:border-primary-200 hover:shadow-xl transition-all duration-300"
                       >
                         {/* Image */}
                         <div className="relative overflow-hidden aspect-[3/4]">
-                          <Link to={`/product/${item.id}`}>
+                          <Link to={`/product/${item._id}`}>
                             <img
                               src={item.image}
                               alt={item.name}
@@ -192,16 +181,9 @@ const Wishlist = () => {
                             />
                           </Link>
                           
-                          {/* Discount Badge */}
-                          {item.discount && (
-                            <span className="absolute top-3 left-3 bg-danger-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-                              -{item.discount}%
-                            </span>
-                          )}
-                          
                           {/* Remove Button */}
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item)}
                             className="absolute top-3 right-3 p-2 bg-white/95 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white shadow-lg hover:scale-110"
                           >
                             <X className="w-4 h-4 text-text-primary" />
@@ -211,13 +193,12 @@ const Wishlist = () => {
                           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <div className="flex gap-2">
                               <button
-                                onClick={() => moveToCart(item.id)}
                                 className="flex-1 bg-white text-text-primary py-2.5 rounded-xl font-semibold hover:bg-primary-500 hover:text-white transition-all duration-300 text-sm"
                               >
                                 Add to Cart
                               </button>
                               <button
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => removeItem(item)}
                                 className="w-10 h-10 bg-white/90 rounded-xl flex items-center justify-center hover:bg-danger-500 hover:text-white transition-all"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -228,7 +209,7 @@ const Wishlist = () => {
 
                         {/* Product Info */}
                         <div className="p-4">
-                          <Link to={`/product/${item.id}`}>
+                          <Link to={`/product/${item._id}`}>
                             <h3 className="font-semibold text-text-primary mb-2 line-clamp-1 hover:text-primary-500 transition-colors">
                               {item.name}
                             </h3>
@@ -251,19 +232,11 @@ const Wishlist = () => {
                           </div>
                           
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg font-bold text-primary-600">
-                                ${item.price.toFixed(2)}
-                              </span>
-                              {item.originalPrice && (
-                                <span className="text-sm text-text-muted line-through">
-                                  ${item.originalPrice.toFixed(2)}
-                                </span>
-                              )}
-                            </div>
+                            <span className="text-lg font-bold text-primary-600">
+                              {formatCurrency(item.price, settings.currency)}
+                            </span>
                             <button
-                              onClick={() => moveToCart(item.id)}
-                              className="p-2 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors group/btn"
+                              className="p-2 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
                               title="Add to Cart"
                             >
                               <ShoppingCart className="w-4 h-4 text-primary-500" />
@@ -271,7 +244,7 @@ const Wishlist = () => {
                           </div>
                           
                           <p className="text-xs text-text-muted mt-2">
-                            Added {new Date(item.dateAdded).toLocaleDateString('en-US', { 
+                            Added {new Date(item.addedAt).toLocaleDateString('en-US', { 
                               month: 'short', 
                               day: 'numeric' 
                             })}
@@ -292,7 +265,7 @@ const Wishlist = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {outOfStockItems.map((item) => (
                       <div
-                        key={item.id}
+                        key={item._id}
                         className="group bg-surface-light rounded-2xl overflow-hidden border border-border-light opacity-75"
                       >
                         <div className="relative overflow-hidden aspect-[3/4]">
@@ -307,7 +280,7 @@ const Wishlist = () => {
                             </span>
                           </div>
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item)}
                             className="absolute top-3 right-3 p-2 bg-white/95 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white shadow-lg"
                           >
                             <X className="w-4 h-4 text-text-primary" />
@@ -332,7 +305,7 @@ const Wishlist = () => {
                             </div>
                             <span className="text-xs text-text-muted">({item.reviews})</span>
                           </div>
-                          <p className="text-lg font-bold text-text-muted">${item.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-text-muted">{formatCurrency(item.price, settings.currency)}</p>
                           <button className="w-full mt-3 py-2.5 border-2 border-border rounded-xl text-sm font-medium text-text-muted hover:border-primary-300 hover:text-primary-500 transition-all">
                             Notify When Available
                           </button>
@@ -398,7 +371,7 @@ const Wishlist = () => {
                           </div>
                           <span className="text-xs text-text-muted">({item.reviews})</span>
                         </div>
-                        <p className="font-bold text-primary-600">${item.price.toFixed(2)}</p>
+                        <p className="font-bold text-primary-600">{formatCurrency(item.price, settings.currency)}</p>
                       </div>
                     </Link>
                   ))}

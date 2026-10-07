@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, 
   Mail, 
+  Phone,
   Lock, 
   Eye, 
   EyeOff, 
@@ -11,15 +12,19 @@ import {
   Check,
   X
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { ApiError } from '../api/client';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -55,6 +60,12 @@ const Register = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[\d+\s()-]{7,15}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
@@ -84,14 +95,26 @@ const Register = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log('Registration successful', formData);
-      navigate('/login');
+      await register({
+        name: formData.name.trim(),
+        email: formData.email,
+        phone: formData.phone.trim(),
+        password: formData.password,
+      });
+      // Registration does not log the user in (backend doesn't set a cookie
+      // on /register), so send them to login to sign in with their new account.
+      navigate('/login', { state: { justRegistered: true } });
     } catch (error) {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+      if (error instanceof ApiError) {
+        if (error.data?.message === 'User already exists') {
+          setErrors({ email: 'An account with this email already exists' });
+        } else {
+          setErrors({ submit: error.message || 'Registration failed. Please try again.' });
+        }
+      } else {
+        setErrors({ submit: 'Unable to reach the server. Please try again.' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -208,6 +231,35 @@ const Register = () => {
                 <p className="mt-1.5 text-sm text-danger-500 flex items-center gap-1">
                   <span className="inline-block w-1 h-1 bg-danger-500 rounded-full"></span>
                   {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Phone Field */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-text-secondary mb-2">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+1 234 567 8900"
+                  className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 transition-all duration-300 outline-none ${
+                    errors.phone 
+                      ? 'border-danger-400 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20' 
+                      : 'border-border focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20'
+                  }`}
+                />
+              </div>
+              {errors.phone && (
+                <p className="mt-1.5 text-sm text-danger-500 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-danger-500 rounded-full"></span>
+                  {errors.phone}
                 </p>
               )}
             </div>

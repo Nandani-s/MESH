@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Heart, 
@@ -8,13 +8,32 @@ import {
   X,
   Truck,
   ChevronRight,
-  User
+  ChevronDown,
+  User,
+  LayoutDashboard,
+  LogOut
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import logo from '../assets/logo.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { count: wishlistCount } = useWishlist();
+
+  const handleLogout = async () => {
+    setIsUserMenuOpen(false);
+    try {
+      await logout();
+    } finally {
+      navigate('/');
+    }
+  };
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -45,9 +64,11 @@ const Header = () => {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
-              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent">
-                MESH
-              </h1>
+              <img
+                src={logo}
+                alt="MESH - Women's Fashion"
+                className="h-14 w-32 lg:h-16 lg:w-36 object-cover"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -92,13 +113,60 @@ const Header = () => {
                 )}
               </div>
 
-              {/* Wishlist */}
-              <Link 
-                to="/login"
-                className="p-2 text-text-secondary hover:text-primary-500 transition-colors rounded-lg hover:bg-background-muted relative"
-              >
-                <User  className="w-5 h-5" />
-              </Link>
+              {/* Account */}
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-1 p-2 text-text-secondary hover:text-primary-500 transition-colors rounded-lg hover:bg-background-muted"
+                  >
+                    <User className="w-5 h-5" />
+                    <ChevronDown className="w-4 h-4 hidden sm:block" />
+                  </button>
+                  {isUserMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      />
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-surface-light rounded-xl shadow-2xl border border-border-light py-2 z-20">
+                        <div className="px-4 py-3 border-b border-border-light">
+                          <p className="text-sm font-medium text-text-primary truncate">{user?.name}</p>
+                          <p className="text-xs text-text-muted truncate">{user?.email}</p>
+                        </div>
+                        <div className="py-2">
+                          {user?.role === 'admin' && (
+                            <Link
+                              to="/admin"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-background-muted"
+                            >
+                              <LayoutDashboard className="w-4 h-4" />
+                              Admin Panel
+                            </Link>
+                          )}
+                        </div>
+                        <div className="border-t border-border-light pt-2">
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-danger-500 hover:bg-danger-50 transition-colors w-full"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign Out
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Link 
+                  to="/login"
+                  className="p-2 text-text-secondary hover:text-primary-500 transition-colors rounded-lg hover:bg-background-muted relative"
+                >
+                  <User className="w-5 h-5" />
+                </Link>
+              )}
 
               {/* Wishlist */}
               <Link 
@@ -106,9 +174,11 @@ const Header = () => {
                 className="p-2 text-text-secondary hover:text-primary-500 transition-colors rounded-lg hover:bg-background-muted relative"
               >
                 <Heart className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium">
-                  3
-                </span>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                    {wishlistCount > 9 ? '9+' : wishlistCount}
+                  </span>
+                )}
               </Link>
 
               {/* Cart */}

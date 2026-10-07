@@ -7,6 +7,8 @@ import {
   ArrowRight,
   Heart
 } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
+import { apiPost, ApiError } from '../api/client';
 
 // Custom SVG Social Icons
 const Facebook = ({ className = "w-5 h-5" }) => (
@@ -35,21 +37,39 @@ const Youtube = ({ className = "w-5 h-5" }) => (
 
 const Footer = () => {
   const [email, setEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState(''); // '', 'loading', 'success', 'error'
+  const [subscribeMsg, setSubscribeMsg] = useState('');
+  const { settings } = useSettings();
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubscribeStatus('loading');
+    try {
+      const res = await apiPost('/subscribe', { email });
+      setSubscribeStatus('success');
+      setSubscribeMsg(res.message || 'Subscribed successfully!');
+      setEmail('');
+    } catch (error) {
+      setSubscribeStatus('error');
+      setSubscribeMsg(error instanceof ApiError ? error.message : 'Failed to subscribe. Please try again.');
+    }
+  };
 
   const quickLinks = [
     { name: 'About Us', path: '/about' },
     { name: 'Contact', path: '/contact' },
     { name: 'Shop', path: '/shop' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'Size Guide', path: '/size-guide' },
+    { name: 'New Arrivals', path: '/new-arrivals' },
+    { name: 'Sale', path: '/sale' },
   ];
 
   const customerService = [
-    { name: 'Shipping Info', path: '/shipping' },
-    { name: 'Returns & Exchange', path: '/returns' },
-    { name: 'Order Tracking', path: '/track-order' },
-    { name: 'FAQ', path: '/faq' },
-    { name: 'Privacy Policy', path: '/privacy' },
+    { name: 'Track Order', path: '/contact' },
+    { name: 'Returns & Exchange', path: '/contact' },
+    { name: 'FAQ', path: '/contact' },
+    { name: 'Privacy Policy', path: '/contact' },
+    { name: 'Categories', path: '/categories' },
   ];
 
   const socialLinks = [
@@ -70,28 +90,34 @@ const Footer = () => {
               <p className="text-text-muted">Get updates on new arrivals and exclusive offers</p>
             </div>
             <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                // Handle newsletter signup
-                setEmail('');
-              }}
-              className="flex-1 w-full max-w-md flex gap-3"
+              onSubmit={handleSubscribe}
+              className="flex-1 w-full max-w-md flex flex-col gap-3"
             >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="flex-1 px-5 py-3 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-white placeholder:text-white/50"
-                required
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 group"
-              >
-                Subscribe
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <div className="flex gap-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setSubscribeStatus(''); }}
+                  placeholder="Enter your email address"
+                  className="flex-1 px-5 py-3 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-white placeholder:text-white/50"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={subscribeStatus === 'loading' || subscribeStatus === 'success'}
+                  className="px-6 py-3 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-400 text-white font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 group whitespace-nowrap"
+                >
+                  {subscribeStatus === 'loading' ? 'Subscribing...' : subscribeStatus === 'success' ? '✓ Done!' : 'Subscribe'}
+                  {subscribeStatus !== 'loading' && subscribeStatus !== 'success' && (
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  )}
+                </button>
+              </div>
+              {subscribeMsg && (
+                <p className={`text-sm ${subscribeStatus === 'success' ? 'text-green-400' : 'text-danger-400'}`}>
+                  {subscribeMsg}
+                </p>
+              )}
             </form>
           </div>
         </div>
@@ -104,7 +130,7 @@ const Footer = () => {
           <div className="lg:col-span-2 space-y-6">
             <Link to="/" className="inline-block">
               <h2 className="text-3xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
-                Femme Fashion
+                {settings.storeName || 'Our Store'}
               </h2>
             </Link>
             <p className="text-text-muted leading-relaxed max-w-md">
@@ -115,6 +141,8 @@ const Footer = () => {
                 <a
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
                   className="w-11 h-11 bg-white/10 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary-500/25"
                 >
@@ -171,30 +199,44 @@ const Footer = () => {
               <span className="absolute -bottom-1 left-0 w-1/2 h-0.5 bg-primary-500 rounded-full"></span>
             </h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3 group">
-                <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
-                  <MapPin className="w-4 h-4 text-primary-400 group-hover:text-white" />
-                </div>
-                <span className="text-text-muted group-hover:text-white transition-colors text-sm leading-relaxed">
-                  123 Fashion Street,<br />New York, NY 10001
-                </span>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
-                  <Phone className="w-4 h-4 text-primary-400 group-hover:text-white" />
-                </div>
-                <a href="tel:+15551234567" className="text-text-muted group-hover:text-white transition-colors text-sm">
-                  +1 (555) 123-4567
-                </a>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
-                  <Mail className="w-4 h-4 text-primary-400 group-hover:text-white" />
-                </div>
-                <a href="mailto:hello@femmefashion.com" className="text-text-muted group-hover:text-white transition-colors text-sm">
-                  hello@femmefashion.com
-                </a>
-              </li>
+              {settings.storeAddress && (
+                <li className="flex items-start gap-3 group">
+                  <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                    <MapPin className="w-4 h-4 text-primary-400 group-hover:text-white" />
+                  </div>
+                  <span className="text-text-muted group-hover:text-white transition-colors text-sm leading-relaxed">
+                    {settings.storeAddress}
+                  </span>
+                </li>
+              )}
+              {settings.storePhone && (
+                <li className="flex items-center gap-3 group">
+                  <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                    <Phone className="w-4 h-4 text-primary-400 group-hover:text-white" />
+                  </div>
+                  <a href={`tel:${settings.storePhone}`} className="text-text-muted group-hover:text-white transition-colors text-sm">
+                    {settings.storePhone}
+                  </a>
+                </li>
+              )}
+              {settings.storeEmail && (
+                <li className="flex items-center gap-3 group">
+                  <div className="w-10 h-10 bg-white/10 group-hover:bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                    <Mail className="w-4 h-4 text-primary-400 group-hover:text-white" />
+                  </div>
+                  <a href={`mailto:${settings.storeEmail}`} className="text-text-muted group-hover:text-white transition-colors text-sm">
+                    {settings.storeEmail}
+                  </a>
+                </li>
+              )}
+              {!settings.storeAddress && !settings.storePhone && !settings.storeEmail && (
+                <li className="text-text-muted text-sm">
+                  Contact info not set yet.<br />
+                  <Link to="/admin/settings" className="text-primary-400 hover:text-primary-300 underline">
+                    Update in Settings
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -205,19 +247,19 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-text-muted text-sm flex items-center gap-1">
-              © {new Date().getFullYear()} Femme Fashion. Made with 
+              © {new Date().getFullYear()} {settings.storeName || 'Our Store'}. Made with 
               <Heart className="w-4 h-4 text-danger-500 fill-danger-500 inline-block mx-1" /> 
               All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link to="/privacy" className="text-text-muted hover:text-white text-sm transition-colors">
-                Privacy Policy
+              <Link to="/about" className="text-text-muted hover:text-white text-sm transition-colors">
+                About
               </Link>
-              <Link to="/terms" className="text-text-muted hover:text-white text-sm transition-colors">
-                Terms of Service
+              <Link to="/contact" className="text-text-muted hover:text-white text-sm transition-colors">
+                Contact
               </Link>
-              <Link to="/cookies" className="text-text-muted hover:text-white text-sm transition-colors">
-                Cookie Policy
+              <Link to="/shop" className="text-text-muted hover:text-white text-sm transition-colors">
+                Shop
               </Link>
             </div>
           </div>

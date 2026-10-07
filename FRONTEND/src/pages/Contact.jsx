@@ -1,134 +1,90 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Clock, 
-  Send,
-  MessageSquare,
-  ArrowRight,
-  CheckCircle,
-  HelpCircle
+  MapPin, Phone, Mail, Clock, Send,
+  MessageSquare, ArrowRight, CheckCircle, HelpCircle
 } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
+import { apiPost, ApiError } from '../api/client';
 
 const Contact = () => {
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: '', email: '', subject: '', message: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const contactInfo = [
+    {
+      icon: MapPin,
+      title: 'Visit Us',
+      details: settings.storeAddress
+        ? [settings.storeAddress]
+        : ['Address not set yet'],
+      action: { text: 'Get Directions', link: settings.storeAddress
+        ? `https://maps.google.com/?q=${encodeURIComponent(settings.storeAddress)}`
+        : '#' }
+    },
+    {
+      icon: Phone,
+      title: 'Call Us',
+      details: settings.storePhone
+        ? [settings.storePhone]
+        : ['Phone not set yet'],
+      action: { text: 'Call Now', link: settings.storePhone ? `tel:${settings.storePhone}` : '#' }
+    },
+    {
+      icon: Mail,
+      title: 'Email Us',
+      details: settings.storeEmail
+        ? [settings.storeEmail]
+        : ['Email not set yet'],
+      action: { text: 'Send Email', link: settings.storeEmail ? `mailto:${settings.storeEmail}` : '#' }
+    },
+    {
+      icon: Clock,
+      title: 'Working Hours',
+      details: ['Mon - Fri: 9:00 AM - 6:00 PM', 'Sat: 10:00 AM - 4:00 PM', 'Sun: Closed'],
+      action: { text: 'Learn More', link: '#' }
+    },
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!formData.subject) {
-      newErrors.subject = 'Subject is required';
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
-    }
-
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
+    if (!formData.subject) newErrors.subject = 'Subject is required';
+    if (!formData.message.trim()) newErrors.message = 'Message is required';
+    else if (formData.message.trim().length < 10) newErrors.message = 'Message must be at least 10 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-
     setIsLoading(true);
-
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await apiPost('/contact', formData);
       setIsSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-      });
+      setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      setErrors({ submit: 'Failed to send message. Please try again.' });
-    } finally {
+      setErrors({ submit: error instanceof ApiError ? error.message : 'Failed to send message. Please try again.' });
+   } finally {
       setIsLoading(false);
     }
   };
 
-  const contactInfo = [
-    {
-      icon: MapPin,
-      title: 'Visit Us',
-      details: ['123 Fashion Street', 'New York, NY 10001', 'United States'],
-      action: {
-        text: 'Get Directions',
-        link: '#'
-      }
-    },
-    {
-      icon: Phone,
-      title: 'Call Us',
-      details: ['+1 (555) 123-4567', '+1 (555) 987-6543'],
-      action: {
-        text: 'Call Now',
-        link: 'tel:+15551234567'
-      }
-    },
-    {
-      icon: Mail,
-      title: 'Email Us',
-      details: ['hello@femmefashion.com', 'support@femmefashion.com'],
-      action: {
-        text: 'Send Email',
-        link: 'mailto:hello@femmefashion.com'
-      }
-    },
-    {
-      icon: Clock,
-      title: 'Working Hours',
-      details: ['Mon - Fri: 9:00 AM - 6:00 PM', 'Sat: 10:00 AM - 4:00 PM', 'Sun: Closed'],
-      action: {
-        text: 'View All Hours',
-        link: '#'
-      }
-    },
-  ];
-
-  const faqs = [
-    {
+  const faqs = [ {
       question: 'How long does shipping take?',
       answer: 'Standard shipping takes 5-7 business days. Express shipping is available for 2-3 business days.'
     },

@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
+import { apiGet } from '../api/client';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -17,26 +20,30 @@ import {
   Bell,
   Search,
   Plus,
-  Edit,
-  Trash2,
   Eye,
   BarChart3,
   DollarSign,
   Box,
-  Star,
-  Image as ImageIcon,
-  Mail,
-  Moon,
-  Sun,
   Home
 } from 'lucide-react';
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { settings } = useSettings();
+  const [counts, setCounts] = useState({ products: null, categories: null, users: null });
+
+  useEffect(() => {
+    apiGet('/dashboard')
+      .then((res) => {
+        const { products, categories, users } = res.data.counts;
+        setCounts({ products, categories, users });
+      })
+      .catch(() => {}); // silently fail — badges just stay blank
+  }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const isActive = (path) => {
     if (path === '/admin') {
@@ -70,19 +77,19 @@ const AdminLayout = ({ children }) => {
           name: 'Products', 
           icon: Package, 
           path: '/admin/products',
-          badge: '124'
+          badge: counts.products !== null ? String(counts.products) : null
         },
         { 
           name: 'Categories', 
           icon: Tags, 
           path: '/admin/categories',
-          badge: '8'
+          badge: counts.categories !== null ? String(counts.categories) : null
         },
         { 
           name: 'Orders', 
           icon: ShoppingCart, 
           path: '/admin/orders',
-          badge: '15'
+          badge: null
         },
       ]
     },
@@ -92,13 +99,13 @@ const AdminLayout = ({ children }) => {
         { 
           name: 'Customers', 
           icon: Users, 
-          path: '/admin/customers',
-          badge: '50K+'
+          path: '/admin/users',
+          badge: counts.users !== null ? String(counts.users) : null
         },
         { 
           name: 'Wishlist', 
           icon: Heart, 
-          path: '/wishlist',
+          path: '/admin/wishlist',
           badge: null
         },
       ]
@@ -116,16 +123,19 @@ const AdminLayout = ({ children }) => {
     },
   ];
 
-  const quickStats = [
-    { label: 'Revenue', value: '$45,231', icon: DollarSign, change: '+12.5%', positive: true },
-    { label: 'Orders', value: '356', icon: ShoppingBag, change: '+8.2%', positive: true },
-    { label: 'Products', value: '124', icon: Box, change: '-2.4%', positive: false },
-    { label: 'Customers', value: '5,423', icon: Users, change: '+18.7%', positive: true },
-  ];
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/login');
+    }
+  };
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    navigate('/login');
+  // "JD" from "John Doe"; falls back if name is missing/blank
+  const getInitials = (name) => {
+    if (!name) return 'AD';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || 'AD';
   };
 
   return (
@@ -135,7 +145,7 @@ const AdminLayout = ({ children }) => {
         <div 
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
-        ></div>
+        />
       )}
 
       {/* Sidebar */}
@@ -155,7 +165,7 @@ const AdminLayout = ({ children }) => {
               </div>
               {isSidebarOpen && (
                 <div className="min-w-0">
-                  <h1 className="font-bold text-lg leading-tight text-white">Femme</h1>
+                  <h1 className="font-bold text-lg leading-tight text-white">{settings.storeName || 'Admin'}</h1>
                   <p className="text-xs text-text-muted">Admin Panel</p>
                 </div>
               )}
@@ -163,7 +173,8 @@ const AdminLayout = ({ children }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-3">
+          <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
+          <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {menuItems.map((section, idx) => (
               <div key={idx} className="mb-6">
                 {isSidebarOpen && (
@@ -223,14 +234,16 @@ const AdminLayout = ({ children }) => {
 
           {/* Sidebar Footer */}
           <div className="p-3 border-t border-border-dark">
-            <Link
-              to="/"
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:bg-white/10 hover:text-white transition-all duration-200`}
               title={!isSidebarOpen ? 'View Store' : ''}
             >
               <Home className="w-5 h-5" />
               {isSidebarOpen && <span className="text-sm font-medium">View Store</span>}
-            </Link>
+            </a>
             <button
               onClick={handleLogout}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-danger-400 hover:bg-danger-500/20 hover:text-danger-300 transition-all duration-200 mt-1`}
@@ -249,36 +262,15 @@ const AdminLayout = ({ children }) => {
         <header className="bg-surface-light border-b border-border-light shadow-sm">
           <div className="px-4 lg:px-6 py-3 lg:py-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 flex-1">
-                {/* Mobile Menu Toggle */}
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-2 hover:bg-background-muted rounded-lg transition-colors"
-                >
-                  {isSidebarOpen ? <X className="w-5 h-5 text-text-secondary" /> : <Menu className="w-5 h-5 text-text-secondary" />}
-                </button>
-
-                {/* Search Bar */}
-                <div className="hidden md:flex items-center gap-2 bg-background-muted rounded-xl px-4 py-2 flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-text-muted" />
-                  <input
-                    type="text"
-                    placeholder="Search orders, products, customers..."
-                    className="bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-muted w-full"
-                  />
-                </div>
-              </div>
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 hover:bg-background-muted rounded-lg transition-colors"
+              >
+                {isSidebarOpen ? <X className="w-5 h-5 text-text-secondary" /> : <Menu className="w-5 h-5 text-text-secondary" />}
+              </button>
 
               <div className="flex items-center gap-2 lg:gap-3">
-                {/* Quick Actions */}
-                <Link
-                  to="/admin/products/add"
-                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-medium transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Product</span>
-                </Link>
-
                 {/* Notifications */}
                 <button className="p-2 hover:bg-background-muted rounded-lg transition-colors relative">
                   <Bell className="w-5 h-5 text-text-secondary" />
@@ -294,10 +286,10 @@ const AdminLayout = ({ children }) => {
                     className="flex items-center gap-3 p-2 hover:bg-background-muted rounded-xl transition-colors"
                   >
                     <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                      SA
+                      {getInitials(user?.name)}
                     </div>
                     <div className="hidden lg:block text-left">
-                      <p className="text-sm font-medium text-text-primary">Sarah Admin</p>
+                      <p className="text-sm font-medium text-text-primary">{user?.name || 'Admin'}</p>
                       <p className="text-xs text-text-muted">Administrator</p>
                     </div>
                     <ChevronDown className="w-4 h-4 text-text-muted hidden lg:block" />
@@ -308,11 +300,11 @@ const AdminLayout = ({ children }) => {
                       <div 
                         className="fixed inset-0 z-10"
                         onClick={() => setIsProfileOpen(false)}
-                      ></div>
+                      />
                       <div className="absolute right-0 top-full mt-2 w-56 bg-surface-light rounded-xl shadow-2xl border border-border-light py-2 z-20">
                         <div className="px-4 py-3 border-b border-border-light">
-                          <p className="text-sm font-medium text-text-primary">Sarah Anderson</p>
-                          <p className="text-xs text-text-muted">sarah@femmefashion.com</p>
+                          <p className="text-sm font-medium text-text-primary">{user?.name || 'Admin'}</p>
+                          <p className="text-xs text-text-muted">{user?.email || ''}</p>
                         </div>
                         <div className="py-2">
                           <Link 
@@ -323,14 +315,16 @@ const AdminLayout = ({ children }) => {
                             <Settings className="w-4 h-4" />
                             Profile Settings
                           </Link>
-                          <Link 
-                            to="/" 
+                          <a 
+                            href="/"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-background-muted transition-colors"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <Eye className="w-4 h-4" />
                             View Store
-                          </Link>
+                          </a>
                         </div>
                         <div className="border-t border-border-light pt-2">
                           <button
@@ -365,35 +359,10 @@ const AdminLayout = ({ children }) => {
           </div>
         </header>
 
-        {/* Quick Stats Bar */}
-        <div className="bg-surface-light border-b border-border-light px-4 lg:px-6 py-4 hidden lg:block">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-6 h-6 text-primary-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-text-muted font-medium">{stat.label}</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-xl font-bold text-text-primary">{stat.value}</p>
-                      <span className={`text-xs font-medium ${stat.positive ? 'text-success-500' : 'text-danger-500'}`}>
-                        {stat.change}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Page Content */}
+        {/* Page Content - Using Outlet for nested routes */}
         <main className="flex-1 overflow-y-auto bg-background-light">
           <div className="p-4 lg:p-6">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Mail, 
   Lock, 
@@ -9,9 +9,13 @@ import {
   ArrowRight,
   ShoppingBag
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { ApiError } from '../api/client';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
@@ -62,21 +66,27 @@ const Login = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Here you would typically make an API call to authenticate
-      // const response = await fetch('/api/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      console.log('Login successful', formData);
-      navigate('/');
+      const loggedInUser = await login(formData.email, formData.password);
+      // If RequireAdmin redirected here, send them back to where they were headed.
+      // Otherwise, admins land on the dashboard by default; everyone else lands on home.
+      const fallback = loggedInUser?.role === 'admin' ? '/admin' : '/';
+      const redirectTo = location.state?.from?.pathname || fallback;
+      navigate(redirectTo, { replace: true });
     } catch (error) {
-      setErrors({ submit: 'Invalid email or password' });
+      if (error instanceof ApiError) {
+        // Map known backend messages to the field they relate to; anything
+        // else falls back to a generic submit-level error.
+        if (error.status === 400 && error.data?.message === 'user not found') {
+          setErrors({ email: 'No account found with this email' });
+        } else if (error.status === 401) {
+          setErrors({ password: 'Incorrect password' });
+        } else {
+          setErrors({ submit: error.message || 'Unable to sign in. Please try again.' });
+        }
+      } else {
+        setErrors({ submit: 'Unable to reach the server. Please try again.' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -233,6 +243,20 @@ const Login = () => {
               )}
             </button>
           </form>
+
+          {/* ─────────── OTP LOGIN OPTION ─────────── */}
+          <div className="mt-6 pt-6 border-t border-border-light">
+            <p className="text-center text-text-muted text-sm mb-3">
+              Or sign in without password
+            </p>
+            <Link
+              to="/login-otp"
+              className="w-full flex items-center justify-center gap-2 py-3.5 border-2 border-primary-500 text-primary-500 rounded-xl font-semibold hover:bg-primary-50 transition-all duration-300"
+            >
+              <Mail className="w-5 h-5" />
+              Login with OTP
+            </Link>
+          </div>
 
           {/* Register Link */}
           <div className="mt-8 text-center">

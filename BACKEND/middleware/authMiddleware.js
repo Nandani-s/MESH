@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/User.model.js";
+import { User } from "../models/user.js";
 
 const verifyUser = async (req, res, next) => { // ye middleware function hai, jo har request ke sath chalta hai, aur user ko verify krta hai, agar user valid hai to next() call krta hai, nhi to error return krta hai
 	try {
@@ -31,4 +31,22 @@ const verifyUser = async (req, res, next) => { // ye middleware function hai, jo
 	}
 }
 
+// Must run AFTER verifyUser (relies on req.user being set). Blocks anyone
+// whose role isn't "admin" — separate from authentication (verifyUser) so
+// "are you logged in" and "are you allowed to do this" stay independent checks.
+const requireAdmin = (req, res, next) => {
+	if (!req.user) {
+		return res.status(401).json({
+			message: "Unauthorized, Please login to access this resource",
+		})
+	}
+	if (req.user.role !== "admin") {
+		return res.status(403).json({
+			message: "Forbidden, Admin access required",
+		})
+	}
+	next()
+}
+
 export default verifyUser;
+export { requireAdmin };

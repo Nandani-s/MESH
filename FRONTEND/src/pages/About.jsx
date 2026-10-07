@@ -1,18 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Heart, 
-  Star, 
-  Shield, 
-  Truck, 
-  Users, 
-  Award,
-  ArrowRight,
-  CheckCircle,
-  Quote
+  Heart, Star, Shield, Truck, Users, Award,
+  ArrowRight, CheckCircle, Quote
 } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const About = () => {
+  const { settings } = useSettings();
+  const storeName = settings.storeName || 'Our Store';
   const stats = [
     { icon: Users, value: '50K+', label: 'Happy Customers' },
     { icon: Star, value: '4.8', label: 'Average Rating' },
@@ -44,10 +40,10 @@ const About = () => {
   ];
 
   const team = [
-    { name: 'Sarah Johnson', role: 'Founder & CEO', image: '/api/placeholder/200/200' },
-    { name: 'Emily Chen', role: 'Creative Director', image: '/api/placeholder/200/200' },
-    { name: 'Maria Garcia', role: 'Head of Design', image: '/api/placeholder/200/200' },
-    { name: 'Lisa Thompson', role: 'Marketing Director', image: '/api/placeholder/200/200' },
+    { name: 'Sarah Johnson', role: 'Founder & CEO', initials: 'SJ' },
+    { name: 'Emily Chen', role: 'Creative Director', initials: 'EC' },
+    { name: 'Maria Garcia', role: 'Head of Design', initials: 'MG' },
+    { name: 'Lisa Thompson', role: 'Marketing Director', initials: 'LT' },
   ];
 
   const milestones = [
@@ -75,7 +71,7 @@ const About = () => {
               </span>
             </h1>
             <p className="text-lg text-text-secondary leading-relaxed mb-8">
-              Femme Fashion was born from a simple idea: that every woman deserves to feel 
+              {storeName} was born from a simple idea: that every woman deserves to feel 
               confident and beautiful in what she wears, without compromising on quality or breaking the bank.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -119,12 +115,12 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src="/api/placeholder/600/700"
-                  alt="Our Story"
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary-100 via-accent-50 to-secondary-100 aspect-[6/7] flex items-center justify-center">
+                <div className="text-center px-8">
+                  <div className="text-8xl mb-6">✨</div>
+                  <h3 className="text-2xl font-bold text-primary-600">{storeName}</h3>
+                  <p className="text-text-muted mt-2">Elevating Everyday Style</p>
+                </div>
               </div>
               <div className="absolute -bottom-6 -right-6 bg-surface-light shadow-2xl rounded-2xl p-6 border border-border-light">
                 <Quote className="w-8 h-8 text-primary-400 mb-2" />
@@ -141,12 +137,12 @@ const About = () => {
               </h2>
               <div className="space-y-4">
                 <p className="text-text-secondary leading-relaxed">
-                  What started as a small boutique in New York City in 2010 has grown into a beloved 
-                  global fashion brand. Our founder, Sarah Johnson, had a vision of creating a fashion 
+                  What started as a small boutique has grown into a beloved 
+                  global fashion brand. Our founder had a vision of creating a fashion 
                   destination where quality meets affordability.
                 </p>
                 <p className="text-text-secondary leading-relaxed">
-                  Today, Femme Fashion curates collections from talented designers worldwide, bringing 
+                  Today, {storeName} curates collections from talented designers worldwide, bringing 
                   you the latest trends while maintaining our commitment to quality and sustainability.
                 </p>
                 <p className="text-text-secondary leading-relaxed">
@@ -175,7 +171,7 @@ const About = () => {
               Our Values
             </h2>
             <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-              These core principles guide everything we do at Femme Fashion
+              These core principles guide everything we do at {storeName}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -244,28 +240,14 @@ const About = () => {
               Meet Our Team
             </h2>
             <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-              The passionate people behind Femme Fashion
+              The passionate people behind {storeName}
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
               <div key={index} className="group text-center">
-                <div className="relative mb-6 overflow-hidden rounded-2xl aspect-square shadow-lg">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                    <div className="flex gap-3">
-                      <a href="#" className="w-10 h-10 bg-white/90 rounded-xl flex items-center justify-center hover:bg-primary-500 hover:text-white transition-all">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
-                      </a>
-                      <a href="#" className="w-10 h-10 bg-white/90 rounded-xl flex items-center justify-center hover:bg-primary-500 hover:text-white transition-all">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
-                      </a>
-                    </div>
-                  </div>
+                <div className="relative mb-6 overflow-hidden rounded-2xl aspect-square shadow-lg bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-white">{member.initials}</span>
                 </div>
                 <h3 className="text-lg font-bold text-text-primary mb-1">{member.name}</h3>
                 <p className="text-text-muted">{member.role}</p>
@@ -282,7 +264,7 @@ const About = () => {
             Ready to Elevate Your Style?
           </h2>
           <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of happy customers who have discovered their perfect style with Femme Fashion.
+            Join thousands of happy customers who have discovered their perfect style with {storeName}.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
