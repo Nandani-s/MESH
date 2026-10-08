@@ -244,7 +244,7 @@ export default function Checkout() {
                   <CreditCard className="w-5 h-5 text-primary-500" /> Payment Method
                 </h2>
 
-                <div className="grid md:grid-cols-3 gap-3">
+               <div className="grid md:grid-cols-3 gap-3">
                   {settings.codEnabled && (
                     <button
                       type="button"

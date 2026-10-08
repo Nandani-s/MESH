@@ -9,11 +9,11 @@ import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 const STATUS_COLORS = {
-  delivered: 'bg-green-100 text-green-800',
+  delivered: 'bg-success-100 text-success-800',
   shipped: 'bg-primary-100 text-primary-800',
-  processing: 'bg-yellow-100 text-yellow-800',
-  pending: 'bg-orange-100 text-orange-800',
-  cancelled: 'bg-gray-100 text-gray-800',
+  processing: 'bg-warning-100 text-warning-800',
+  pending: 'bg-accent-100 text-accent-800',
+  cancelled: 'bg-background-muted text-text-secondary',
 };
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -158,9 +158,9 @@ const AdminOrders = () => {
 					<td className="px-6 py-4 text-sm font-semibold text-text-primary">{formatCurrency(order.totalAmount, settings.currency)}</td>
 					<td className="px-6 py-4">
 					  <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-						order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
-						order.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
-						'bg-yellow-100 text-yellow-700'
+						order.paymentStatus === 'paid' ? 'bg-success-100 text-success-800' :
+						order.paymentStatus === 'failed' ? 'bg-danger-100 text-danger-700' :
+						'bg-warning-100 text-warning-800'
 					  }`}>{order.paymentMethod} · {order.paymentStatus}</span>
 					</td>
 					<td className="px-6 py-4">
@@ -199,7 +199,7 @@ const AdminOrders = () => {
 				  <div><p className="text-xs text-text-muted">Name</p><p>{selectedOrder.user?.name}</p></div>
 				  <div><p className="text-xs text-text-muted">Email</p><p className="flex items-center gap-1"><Mail className="w-3 h-3" />{selectedOrder.user?.email}</p></div>
 				  <div><p className="text-xs text-text-muted">Phone</p><p className="flex items-center gap-1"><Phone className="w-3 h-3" />{selectedOrder.shippingAddress?.phone}</p></div>
-				  <div><p className="text-xs text-text-muted">Payment</p><p>{selectedOrder.paymentMethod} · <span className={selectedOrder.paymentStatus === 'paid' ? 'text-green-600 font-medium' : 'text-yellow-600 font-medium'}>{selectedOrder.paymentStatus}</span></p></div>
+				  <div><p className="text-xs text-text-muted">Payment</p><p>{selectedOrder.paymentMethod} · <span className={selectedOrder.paymentStatus === 'paid' ? 'text-success-700 font-medium' : 'text-warning-800 font-medium'}>{selectedOrder.paymentStatus}</span></p></div>
 				</div>
 			  </div>
 

@@ -131,7 +131,7 @@ const Home = () => {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 to="/shop"
-                className="group bg-accent-500 hover:bg-accent-400 text-text-primary px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-accent-500/30 hover:-translate-y-0.5 flex items-center gap-2"
+                className="group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-md shadow-primary-900/10 hover:-translate-y-0.5 flex items-center gap-2"
               >
                 Shop Now
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

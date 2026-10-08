@@ -11,7 +11,7 @@ import { useSettings } from '../../context/SettingsContext';
 const Toggle = ({ checked, onChange }) => (
   <label className="relative inline-flex items-center cursor-pointer">
     <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
-    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+    <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
   </label>
 );
 
@@ -266,7 +266,7 @@ const AdminSettings = () => {
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
               {saveSuccess && (
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-success-700">
                   <Check className="w-4 h-4" />
                   <span className="text-sm font-medium">Settings saved</span>
                 </div>

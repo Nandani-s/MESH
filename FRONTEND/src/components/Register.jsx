@@ -166,7 +166,7 @@ const Register = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="John Doe"
+                  placeholder="Ram Shrestha"
                   className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 transition-all duration-300 outline-none ${
                     errors.name 
                       ? 'border-danger-400 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20' 

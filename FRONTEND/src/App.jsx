@@ -29,12 +29,15 @@ import AdminLayout from './layouts/AdminLayout';
 import RequireAdmin from './components/RequireAdmin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
+import AdminAddProduct from './pages/admin/AdminAddProduct';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSetting from './pages/admin/AdminSetting';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminCategories from './pages/admin/AdminCategories';
-import AdminWishlist from './pages/admin/AdminWishlist';
+import AdminAddCategory from './pages/admin/AdminAddCategory';
+
+import AdminReports from './pages/admin/AdminReports';
 import CategoryPage from './pages/categoryPage';
 import ProductDetail from './pages/ProductDetail';
 
@@ -71,12 +74,15 @@ const App = () => {
 				<Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
 					<Route index element={<AdminDashboard />} />
 					<Route path="products" element={<AdminProducts />} />
+					<Route path="products/new" element={<AdminAddProduct />} />
 					<Route path="orders" element={<AdminOrders />} />
 					<Route path="users" element={<AdminUsers />} />
 					<Route path="settings" element={<AdminSetting />} />
 					<Route path="analytics" element={<AdminAnalytics />} />
+					<Route path="reports" element={<AdminReports />} />
+					<Route path="categories/new" element={<AdminAddCategory />} />
 					<Route path="categories" element={<AdminCategories />} />
-					<Route path="wishlist" element={<AdminWishlist />} />
+					
 				</Route>
 
 				{/* Main routes with header and footer */}

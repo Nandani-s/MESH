@@ -76,10 +76,10 @@ const AdminDashboard = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Total Products', value: data.counts.products, icon: Package, gradient: 'from-purple-500 to-purple-600', link: '/admin/products' },
-              { title: 'Total Users', value: data.counts.users, icon: Users, gradient: 'from-orange-500 to-orange-600', link: '/admin/users' },
-              { title: 'Categories', value: data.counts.categories, icon: Tag, gradient: 'from-primary-500 to-primary-600', link: '/admin/categories' },
-              { title: 'Wishlist Items', value: data.counts.wishlistItems, icon: Heart, gradient: 'from-pink-500 to-pink-600', link: '/admin/wishlist' },
+              { title: 'Total Products', value: data.counts.products, icon: Package, gradient: 'from-primary-500 to-primary-700', link: '/admin/products' },
+              { title: 'Total Users', value: data.counts.users, icon: Users, gradient: 'from-accent-500 to-accent-700', link: '/admin/users' },
+              { title: 'Categories', value: data.counts.categories, icon: Tag, gradient: 'from-primary-300 to-primary-500', link: '/admin/categories' },
+              { title: 'Wishlist Items', value: data.counts.wishlistItems, icon: Heart, gradient: 'from-primary-400 to-primary-600', link: '/admin/wishlist' },
             ].map(({ title, value, icon: Icon, gradient, link }) => (
               <Link key={title} to={link}
                 className="bg-surface-light rounded-xl shadow-sm hover:shadow-md transition-shadow border border-border-light p-6 block">
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
                     <p className="text-sm text-text-muted mb-1">{title}</p>
                     <p className="text-2xl font-bold text-text-primary">{value.toLocaleString()}</p>
                     {title === 'Total Users' && (
-                      <p className="text-xs text-green-600 mt-1">+{data.counts.newUsersThisMonth} this month</p>
+                      <p className="text-xs text-success-700 mt-1">+{data.counts.newUsersThisMonth} this month</p>
                     )}
                   </div>
                   <div className={`w-12 h-12 bg-gradient-to-r ${gradient} rounded-lg flex items-center justify-center shadow-lg`}>
@@ -102,7 +102,7 @@ const AdminDashboard = () => {
           {/* Revenue/Orders placeholders */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
-              { title: 'Total Revenue', icon: ShoppingCart, color: 'from-green-500 to-green-600' },
+              { title: 'Total Revenue', icon: ShoppingCart, color: 'from-success-500 to-success-700' },
               { title: 'Total Orders', icon: ShoppingCart, color: 'from-primary-500 to-primary-600' },
             ].map(({ title, icon: Icon, color }) => (
               <div key={title} className="bg-surface-light rounded-xl shadow-sm border border-border-light p-6 flex items-center justify-between opacity-60">
@@ -136,9 +136,9 @@ const AdminDashboard = () => {
                   {data.topWishlisted.map((item, index) => (
                     <div key={item.product._id} className="flex items-center gap-4 p-4 hover:bg-background-muted transition">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        index === 1 ? 'bg-gray-100 text-gray-600' :
-                        index === 2 ? 'bg-orange-100 text-orange-600' : 'bg-background-muted text-text-muted'
+                        index === 0 ? 'bg-accent-100 text-accent-800' :
+                        index === 1 ? 'bg-secondary-100 text-secondary-700' :
+                        index === 2 ? 'bg-primary-100 text-primary-700' : 'bg-background-muted text-text-muted'
                       }`}>{index + 1}</span>
                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-background-muted flex items-center justify-center flex-shrink-0">
                         {item.product.image
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
                         <p className="text-xs text-text-muted truncate">{u.email}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-primary-100 text-primary-700'}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-accent-100 text-accent-800' : 'bg-primary-100 text-primary-700'}`}>
                           {u.role === 'admin' ? 'Admin' : 'Customer'}
                         </span>
                         <span className="text-xs text-text-muted">{timeAgo(u.createdAt)}</span>
@@ -196,11 +196,11 @@ const AdminDashboard = () => {
 
           {/* Low Stock Alert */}
           {data.lowStockProducts.length > 0 && (
-            <div className="bg-surface-light rounded-xl shadow-sm border border-orange-200">
-              <div className="p-6 border-b border-orange-200 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-500" />
+            <div className="bg-surface-light rounded-xl shadow-sm border border-warning-200">
+              <div className="p-6 border-b border-warning-200 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-warning-600" />
                 <h2 className="text-lg font-semibold text-text-primary">Low Stock Alert</h2>
-                <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">
+                <span className="ml-auto text-xs bg-warning-100 text-warning-800 px-2 py-1 rounded-full font-medium">
                   {data.lowStockProducts.length} product{data.lowStockProducts.length > 1 ? 's' : ''}
                 </span>
               </div>
@@ -217,7 +217,7 @@ const AdminDashboard = () => {
                       <p className="text-xs text-text-muted">{product.availability}</p>
                     </div>
                     <span className={`text-sm font-bold px-3 py-1 rounded-full flex-shrink-0 ${
-                      product.stock === 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                      product.stock === 0 ? 'bg-danger-100 text-danger-700' : 'bg-warning-100 text-warning-800'
                     }`}>
                       {product.stock === 0 ? 'Out of stock' : `${product.stock} left`}
                     </span>

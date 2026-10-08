@@ -184,7 +184,7 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="John Doe"
+                        placeholder="Ram Shrestha"
                         className={`w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-300 outline-none ${
                           errors.name 
                             ? 'border-danger-400 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20' 
@@ -293,15 +293,16 @@ const Contact = () => {
 
             {/* Map & FAQ */}
             <div className="space-y-8">
-              {/* Map Placeholder */}
+              {/* ARISH's house, as provided in the Google Maps embed */}
               <div className="bg-surface-light rounded-2xl overflow-hidden shadow-lg border border-border-light h-64 lg:h-80">
-                <div className="w-full h-full bg-secondary-100 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 text-primary-400 mx-auto mb-3" />
-                    <p className="text-text-secondary font-medium">Map Integration</p>
-                    <p className="text-sm text-text-muted">Google Maps would be embedded here</p>
-                  </div>
-                </div>
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d479.13030065105704!2d84.12166593924132!3d27.64420278951241!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39945106614c6461%3A0x1413293640360893!2zQVJJU0jigJlzIGhvdXNl!5e1!3m2!1sen!2snp!4v1791448321933!5m2!1sen!2snp"
+                  title="Map to ARISH's house"
+                  className="h-full w-full border-0"
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                />
               </div>
 
               {/* FAQ Section */}

@@ -10,8 +10,11 @@ import {
   ImageOff,
   Star,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { productApi } from '../../api/products';
 import { categoryApi } from '../../api/categories';
 import { ApiError } from '../../api/client';
@@ -21,6 +24,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 // Fallback list shown while categories are loading or if the fetch fails.
 // Keep this in sync with your Categories page as a last resort only.
 const CATEGORY_FALLBACK = ['Winter', 'Summer', 'Autumn', 'Spring'];
+const PRODUCTS_PER_PAGE = 10;
 
 const AVAILABILITY_OPTIONS = [
   { value: 'InStock', label: 'In Stock' },
@@ -48,6 +52,7 @@ const AdminProducts = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -203,11 +208,17 @@ const AdminProducts = () => {
 	const matchesCategory = categoryFilter === 'All' || product.category === categoryFilter;
 	return matchesSearch && matchesCategory;
   });
+  const pageCount = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const visiblePage = Math.min(currentPage, Math.max(pageCount, 1));
+  const pageProducts = filteredProducts.slice(
+	(visiblePage - 1) * PRODUCTS_PER_PAGE,
+	visiblePage * PRODUCTS_PER_PAGE
+  );
 
   const availabilityBadge = (availability) => {
-	if (availability === 'InStock') return 'bg-green-100 text-green-800';
-	if (availability === 'OutOfStock') return 'bg-red-100 text-red-800';
-	return 'bg-yellow-100 text-yellow-800'; // PreOrder
+	if (availability === 'InStock') return 'bg-success-100 text-success-800';
+	if (availability === 'OutOfStock') return 'bg-danger-100 text-danger-700';
+	return 'bg-warning-100 text-warning-800'; // PreOrder
   };
 
   return (
@@ -218,13 +229,13 @@ const AdminProducts = () => {
 		  <h1 className="text-3xl font-bold text-text-primary">Products</h1>
 		  <p className="text-text-muted mt-1">Manage your product inventory</p>
 		</div>
-		<button
-		  onClick={() => handleOpenModal()}
+		<Link
+		  to="/admin/products/new"
 		  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition flex items-center gap-2"
 		>
 		  <Plus className="w-4 h-4" />
 		  Add Product
-		</button>
+		</Link>
 	  </div>
 
 	  {/* Search and Filter */}
@@ -236,13 +247,19 @@ const AdminProducts = () => {
 			  type="text"
 			  placeholder="Search products..."
 			  value={searchTerm}
-			  onChange={(e) => setSearchTerm(e.target.value)}
+			  onChange={(e) => {
+				setSearchTerm(e.target.value);
+				setCurrentPage(1);
+			  }}
 			  className="w-full pl-10 pr-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary"
 			/>
 		  </div>
 		  <select
 			value={categoryFilter}
-			onChange={(e) => setCategoryFilter(e.target.value)}
+			onChange={(e) => {
+			  setCategoryFilter(e.target.value);
+			  setCurrentPage(1);
+			}}
 			className="px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary"
 		  >
 			<option value="All">All Categories</option>
@@ -283,88 +300,136 @@ const AdminProducts = () => {
 		</div>
 	  )}
 
-	  {/* Products Grid */}
+	  {/* Products List */}
 	  {!isLoading && !loadError && filteredProducts.length > 0 && (
-		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-		  {filteredProducts.map((product) => (
-			<div key={product._id} className="bg-surface-light rounded-xl shadow-sm border border-border-light hover:shadow-md transition">
-			  <div className="p-6">
-				<div className="flex items-start justify-between mb-4">
-				  <div className="flex items-center gap-3 min-w-0">
-					<div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-background-muted flex items-center justify-center">
-					  {product.image ? (
-						<img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-					  ) : (
-						<ImageOff className="w-6 h-6 text-text-muted" />
-					  )}
-					</div>
-					<div className="min-w-0">
-					  <h3 className="font-semibold text-text-primary truncate">{product.name}</h3>
-					  <p className="text-xs text-text-muted truncate">{product.brand}</p>
-					  <div className="flex items-center gap-1 mt-1">
-						<Star className="w-3 h-3 text-yellow-400 fill-current" />
-						<span className="text-xs text-text-primary">
-						  {product.aggregateRating?.reviewCount
-							? `${product.aggregateRating.ratingValue.toFixed(1)} (${product.aggregateRating.reviewCount})`
-							: 'No ratings yet'}
-						</span>
+		<div className="overflow-hidden rounded-xl border border-border-light bg-surface-light shadow-sm">
+		  <div className="overflow-x-auto">
+			<table className="w-full min-w-[850px] text-left">
+			  <thead className="bg-background-muted text-xs uppercase tracking-wider text-text-muted">
+				<tr>
+				  <th className="px-5 py-3 font-semibold">Product</th>
+				  <th className="px-5 py-3 font-semibold">Category</th>
+				  <th className="px-5 py-3 font-semibold">Price</th>
+				  <th className="px-5 py-3 font-semibold">Stock</th>
+				  <th className="px-5 py-3 font-semibold">Availability</th>
+				  <th className="px-5 py-3 font-semibold">Rating</th>
+				  <th className="px-5 py-3 text-right font-semibold">Actions</th>
+				</tr>
+			  </thead>
+			  <tbody className="divide-y divide-border-light">
+				{pageProducts.map((product) => (
+				  <tr key={product._id} className="transition-colors hover:bg-background-muted/60">
+					<td className="px-5 py-4">
+					  <div className="flex min-w-0 items-center gap-3">
+						<div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-background-muted flex items-center justify-center">
+						  {product.image ? (
+							<img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+						  ) : (
+							<ImageOff className="h-5 w-5 text-text-muted" />
+						  )}
+						</div>
+						<div className="min-w-0">
+						  <p className="max-w-xs truncate font-semibold text-text-primary">{product.name}</p>
+						  <p className="max-w-xs truncate text-xs text-text-muted">{product.brand}</p>
+						</div>
 					  </div>
-					</div>
-				  </div>
-				  <div className="flex gap-1 flex-shrink-0">
-					<button
-					  onClick={() => toggleAvailability(product)}
-					  disabled={busyProductId === product._id}
-					  className={`p-1.5 rounded transition disabled:opacity-50 ${
-						product.availability === 'InStock'
-						  ? 'text-green-500 hover:bg-green-50'
-						  : 'text-red-500 hover:bg-red-50'
-					  }`}
-					  title={product.availability === 'InStock' ? 'Mark out of stock' : 'Mark in stock'}
-					>
-					  {product.availability === 'InStock' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-					</button>
-					<button
-					  onClick={() => handleOpenModal(product)}
-					  className="p-1.5 text-text-muted hover:text-primary-500 transition"
-					>
-					  <Edit className="w-4 h-4" />
-					</button>
-					<button
-					  onClick={() => handleDelete(product._id)}
-					  disabled={busyProductId === product._id}
-					  className="p-1.5 text-text-muted hover:text-danger-500 transition disabled:opacity-50"
-					>
-					  <Trash2 className="w-4 h-4" />
-					</button>
-				  </div>
-				</div>
-
-				<div className="space-y-2">
-				  <div className="flex items-center justify-between text-sm">
-					<span className="text-text-muted">Price</span>
-					<span className="font-semibold text-text-primary">{formatCurrency(product.price, settings.currency)}</span>
-				  </div>
-				  <div className="flex items-center justify-between text-sm">
-					<span className="text-text-muted">Stock</span>
-					<span className={`font-semibold ${product.stock < 10 ? 'text-red-600' : 'text-text-primary'}`}>
+					</td>
+					<td className="px-5 py-4 text-sm text-text-secondary">{product.category}</td>
+					<td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-text-primary">
+					  {formatCurrency(product.price, settings.currency)}
+					</td>
+					<td className={`whitespace-nowrap px-5 py-4 text-sm font-medium ${product.stock < 10 ? 'text-danger-700' : 'text-text-primary'}`}>
 					  {product.stock} units
-					</span>
-				  </div>
-				  <div className="flex items-center justify-between text-sm">
-					<span className="text-text-muted">Category</span>
-					<span className="text-text-primary">{product.category}</span>
-				  </div>
-				  <div className="flex items-center justify-between text-sm">
-					<span className="text-text-muted">Availability</span>
-					<span className={`px-2 py-1 text-xs rounded-full ${availabilityBadge(product.availability)}`}>
-					  {AVAILABILITY_OPTIONS.find((o) => o.value === product.availability)?.label || product.availability}
-					</span>
-				  </div>
-				</div>
-			  </div>
-			</div>
-		  ))}
+					</td>
+					<td className="px-5 py-4">
+					  <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${availabilityBadge(product.availability)}`}>
+						{AVAILABILITY_OPTIONS.find((option) => option.value === product.availability)?.label || product.availability}
+					  </span>
+					</td>
+					<td className="whitespace-nowrap px-5 py-4">
+					  <div className="flex items-center gap-1 text-sm text-text-primary">
+						<Star className="h-3.5 w-3.5 fill-current text-warning-500" />
+						{product.aggregateRating?.reviewCount
+						  ? `${product.aggregateRating.ratingValue.toFixed(1)} (${product.aggregateRating.reviewCount})`
+						  : <span className="text-text-muted">No ratings</span>}
+					  </div>
+					</td>
+					<td className="px-5 py-4">
+					  <div className="flex justify-end gap-1">
+						<button
+						  type="button"
+						  onClick={() => toggleAvailability(product)}
+						  disabled={busyProductId === product._id}
+						  className={`rounded-lg p-2 transition disabled:opacity-50 ${
+							product.availability === 'InStock'
+							  ? 'text-success-700 hover:bg-success-50'
+							  : 'text-danger-600 hover:bg-danger-50'
+						  }`}
+						  title={product.availability === 'InStock' ? 'Mark out of stock' : 'Mark in stock'}
+						  aria-label={product.availability === 'InStock' ? `Mark ${product.name} out of stock` : `Mark ${product.name} in stock`}
+						>
+						  {product.availability === 'InStock' ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+						</button>
+						<button
+						  type="button"
+						  onClick={() => handleOpenModal(product)}
+						  className="rounded-lg p-2 text-text-muted transition hover:bg-primary-50 hover:text-primary-600"
+						  title="Edit product"
+						  aria-label={`Edit ${product.name}`}
+						>
+						  <Edit className="h-4 w-4" />
+						</button>
+						<button
+						  type="button"
+						  onClick={() => handleDelete(product._id)}
+						  disabled={busyProductId === product._id}
+						  className="rounded-lg p-2 text-text-muted transition hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50"
+						  title="Delete product"
+						  aria-label={`Delete ${product.name}`}
+						>
+						  <Trash2 className="h-4 w-4" />
+						</button>
+					  </div>
+					</td>
+				  </tr>
+				))}
+			  </tbody>
+			</table>
+		  </div>
+		</div>
+	  )}
+
+	  {!isLoading && !loadError && filteredProducts.length > 0 && (
+		<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+		  <p className="text-sm text-text-muted" aria-live="polite">
+			Showing {(visiblePage - 1) * PRODUCTS_PER_PAGE + 1}–
+			{Math.min(visiblePage * PRODUCTS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+		  </p>
+		  {pageCount > 1 && (
+			<nav className="flex items-center justify-center gap-2" aria-label="Product list pagination">
+			  <button
+				type="button"
+				onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+				disabled={visiblePage === 1}
+				className="inline-flex items-center gap-1 rounded-lg border border-border-light px-3 py-2 text-sm text-text-primary transition hover:bg-background-muted disabled:cursor-not-allowed disabled:opacity-50"
+			  >
+				<ChevronLeft className="h-4 w-4" />
+				Previous
+			  </button>
+			  <span className="px-2 text-sm text-text-muted" aria-current="page">
+				Page {visiblePage} of {pageCount}
+			  </span>
+			  <button
+				type="button"
+				onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+				disabled={visiblePage === pageCount}
+				className="inline-flex items-center gap-1 rounded-lg border border-border-light px-3 py-2 text-sm text-text-primary transition hover:bg-background-muted disabled:cursor-not-allowed disabled:opacity-50"
+			  >
+				Next
+				<ChevronRight className="h-4 w-4" />
+			  </button>
+			</nav>
+		  )}
 		</div>
 	  )}
 

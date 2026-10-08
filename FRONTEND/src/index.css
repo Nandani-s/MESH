@@ -2,118 +2,128 @@
 
 @layer base {
   html {
-    background: #FAFAF7;
+    background: #FBF6F1;
   }
 
   body {
     margin: 0;
-    background: #FAFAF7;
-    color: #171717;
+    background: #FBF6F1;
+    color: #3B2925;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background: #A2E0CD;
-    color: #033126;
+    background: #E8C5BC;
+    color: #3B2925;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
   }
 }
 
 @theme {
-  /* ── Brand: Emerald Dark #087F5B ─────────────────────── */
-  --color-primary-50: #E9F7F2;
-  --color-primary-100: #CEEEE3;
-  --color-primary-200: #A2E0CD;
-  --color-primary-300: #6DCDB4;
-  --color-primary-400: #33B697;
-  --color-primary-500: #087F5B;
-  --color-primary-600: #076C4E;
-  --color-primary-700: #065A41;
-  --color-primary-800: #054734;
-  --color-primary-900: #033126;
+  /* ── Brand: muted terracotta rose ───────────────────── */
+  --color-primary-50: #FBF6F1;
+  --color-primary-100: #F3E8DF;
+  --color-primary-200: #E8C5BC;
+  --color-primary-300: #D99A8B;
+  --color-primary-400: #C97864;
+  --color-primary-500: #B85C4A;
+  --color-primary-600: #A64F3E;
+  --color-primary-700: #8E4234;
+  --color-primary-800: #71352C;
+  --color-primary-900: #542A24;
 
-  /* ── Support: warm neutrals ──────────────────────────── */
-  --color-secondary-50: #FAFAF7;
-  --color-secondary-100: #F2F2EC;
-  --color-secondary-200: #E7E7DF;
-  --color-secondary-300: #D5D5CC;
-  --color-secondary-400: #B2B2A8;
-  --color-secondary-500: #8E8E84;
-  --color-secondary-600: #73736A;
-  --color-secondary-700: #595952;
-  --color-secondary-800: #41413C;
-  --color-secondary-900: #2A2A27;
+  /* ── Support: warm ivory, beige, and dusty rose ─────── */
+  --color-secondary-50: #FBF6F1;
+  --color-secondary-100: #F3E8DF;
+  --color-secondary-200: #E8C5BC;
+  --color-secondary-300: #D99A8B;
+  --color-secondary-400: #CDA79C;
+  --color-secondary-500: #A98A80;
+  --color-secondary-600: #7A625B;
+  --color-secondary-700: #624B45;
+  --color-secondary-800: #4D3934;
+  --color-secondary-900: #3B2925;
 
-  /* ── Accent: Emerald Bright #12B886 ──────────────────── */
-  --color-accent-50: #E5FAF3;
-  --color-accent-100: #C4F4E4;
-  --color-accent-200: #8CEACB;
-  --color-accent-300: #55E0B3;
-  --color-accent-400: #29D59F;
-  --color-accent-500: #12B886;
-  --color-accent-600: #0E9C73;
-  --color-accent-700: #0B7E5C;
-  --color-accent-800: #08634A;
-  --color-accent-900: #054636;
+  /* ── Accent: muted champagne gold ───────────────────── */
+  --color-accent-50: #F8F4EE;
+  --color-accent-100: #EEE6DA;
+  --color-accent-200: #DFD0BC;
+  --color-accent-300: #CEB99D;
+  --color-accent-400: #C2A887;
+  --color-accent-500: #B89A7A;
+  --color-accent-600: #A48768;
+  --color-accent-700: #877054;
+  --color-accent-800: #695840;
+  --color-accent-900: #4D4131;
 
-  /* ── Backgrounds: Warm White #FAFAF7 / Charcoal #171717 ─ */
-  --color-background-light: #FFFFFF;
-  --color-background: #FAFAF7;
-  --color-background-muted: #F1F1EB;
-  --color-background-dark: #171717;
+  /* ── Backgrounds: warm ivory and beige ──────────────── */
+  --color-background-light: #FBF6F1;
+  --color-background: #FBF6F1;
+  --color-background-muted: #F3E8DF;
+  --color-background-dark: #3B2925;
 
-  --color-surface-light: #FFFFFF;
-  --color-surface: #FFFFFF;
+  --color-surface-light: #FFFDFC;
+  --color-surface: #FFFDFC;
   --color-surface-elevated: #FFFFFF;
-  --color-surface-dark: #1F1F1E;
+  --color-surface-dark: #3B2925;
 
-  /* ── Text ────────────────────────────────────────────── */
-  --color-text-primary: #171717;
-  --color-text-secondary: #4B4B47;
-  --color-text-muted: #7C7C74;
-  --color-text-inverse: #FAFAF7;
+  /* ── Text ───────────────────────────────────────────── */
+  --color-text-primary: #3B2925;
+  --color-text-secondary: #624B45;
+  --color-text-muted: #7A625B;
+  --color-text-inverse: #FFFFFF;
 
-  /* ── Borders ─────────────────────────────────────────── */
-  --color-border-light: #ECECE5;
-  --color-border: #E3E3DB;
-  --color-border-strong: #C9C9C0;
-  --color-border-dark: #34342F;
+  /* ── Borders ────────────────────────────────────────── */
+  --color-border-light: #EDE1DA;
+  --color-border: #E4D4CC;
+  --color-border-strong: #CEB9AF;
+  --color-border-dark: #624B45;
 
-  /* ── Status ──────────────────────────────────────────── */
-  --color-success-50: #E9F9F1;
-  --color-success-100: #D0F3E2;
-  --color-success-200: #A5E8C8;
-  --color-success-300: #70DBAB;
-  --color-success-400: #3BCB8E;
-  --color-success-500: #17A46F;
-  --color-success-600: #10875B;
-  --color-success-700: #0D6C49;
-  --color-success-800: #0A5539;
-  --color-success-900: #07402C;
+  /* ── Status: muted tones retain clear meaning ───────── */
+  --color-success-50: #F0F3EE;
+  --color-success-100: #E2E9DE;
+  --color-success-200: #C8D5C2;
+  --color-success-300: #A9BEA1;
+  --color-success-400: #879E7E;
+  --color-success-500: #6F8767;
+  --color-success-600: #5B7154;
+  --color-success-700: #4A5C44;
+  --color-success-800: #3B4937;
+  --color-success-900: #2E392B;
 
-  --color-warning-50: #FFFAEF;
-  --color-warning-100: #FFF2D6;
-  --color-warning-200: #FFE2A8;
-  --color-warning-300: #FFCD72;
-  --color-warning-400: #FFB649;
-  --color-warning-500: #F1980B;
-  --color-warning-600: #D37F07;
-  --color-warning-700: #AD6705;
-  --color-warning-800: #8A5104;
-  --color-warning-900: #6C3F03;
+  --color-warning-50: #F8F4EE;
+  --color-warning-100: #EEE6DA;
+  --color-warning-200: #DFD0BC;
+  --color-warning-300: #CEB99D;
+  --color-warning-400: #C2A887;
+  --color-warning-500: #B89A7A;
+  --color-warning-600: #A48768;
+  --color-warning-700: #877054;
+  --color-warning-800: #695840;
+  --color-warning-900: #4D4131;
 
-  --color-danger-50: #FEF1F2;
-  --color-danger-100: #FDE0E3;
-  --color-danger-200: #FBC2C8;
-  --color-danger-300: #F8959F;
-  --color-danger-400: #F26574;
-  --color-danger-500: #E63E51;
-  --color-danger-600: #CE2B3F;
-  --color-danger-700: #AC2234;
-  --color-danger-800: #8D1F2E;
-  --color-danger-900: #741C28;
+  --color-danger-50: #FBF0ED;
+  --color-danger-100: #F3DDD7;
+  --color-danger-200: #E8C5BC;
+  --color-danger-300: #D99A8B;
+  --color-danger-400: #C97864;
+  --color-danger-500: #B85C4A;
+  --color-danger-600: #A64F3E;
+  --color-danger-700: #8E4234;
+  --color-danger-800: #71352C;
+  --color-danger-900: #542A24;
 
   /* ── Typography ──────────────────────────────────────── */
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }

@@ -10,16 +10,15 @@ import {
   Tags,
   Users,
   ShoppingCart,
-  Heart,
   Settings,
   LogOut,
   Menu,
   X,
   ChevronDown,
-  Bell,
   Search,
   Eye,
   BarChart3,
+  TrendingUp,
   Home
 } from 'lucide-react';
 
@@ -40,6 +39,12 @@ const AdminLayout = () => {
   }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(
+    location.pathname.startsWith('/admin/products')
+  );
+  const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(
+    location.pathname.startsWith('/admin/categories')
+  );
 
   const isActive = (path) => {
     if (path === '/admin') {
@@ -58,12 +63,6 @@ const AdminLayout = () => {
           path: '/admin',
           badge: null
         },
-        { 
-          name: 'Analytics', 
-          icon: BarChart3, 
-          path: '/admin/analytics',
-          badge: 'New'
-        },
       ]
     },
     {
@@ -73,13 +72,21 @@ const AdminLayout = () => {
           name: 'Products', 
           icon: Package, 
           path: '/admin/products',
-          badge: counts.products !== null ? String(counts.products) : null
+          badge: counts.products !== null ? String(counts.products) : null,
+          children: [
+            { name: 'All Products', path: '/admin/products' },
+            { name: 'Add Product', path: '/admin/products/new' },
+          ]
         },
         { 
           name: 'Categories', 
           icon: Tags, 
           path: '/admin/categories',
-          badge: counts.categories !== null ? String(counts.categories) : null
+          badge: counts.categories !== null ? String(counts.categories) : null,
+          children: [
+            { name: 'All Categories', path: '/admin/categories' },
+            { name: 'Add Category', path: '/admin/categories/new' },
+          ]
         },
         { 
           name: 'Orders', 
@@ -98,11 +105,23 @@ const AdminLayout = () => {
           path: '/admin/users',
           badge: counts.users !== null ? String(counts.users) : null
         },
+       
+      ]
+    },
+	 {
+      title: 'Reports',
+      items: [
         { 
-          name: 'Wishlist', 
-          icon: Heart, 
-          path: '/admin/wishlist',
+          name: 'Reports', 
+          icon: BarChart3, 
+          path: '/admin/reports',
           badge: null
+        },
+        { 
+          name: 'Analytics', 
+          icon: TrendingUp, 
+          path: '/admin/analytics',
+          badge: 'New'
         },
       ]
     },
@@ -162,7 +181,7 @@ const AdminLayout = () => {
               {isSidebarOpen && (
                 <div className="min-w-0">
                   <h1 className="font-bold text-lg leading-tight text-white">{settings.storeName || 'Admin'}</h1>
-                  <p className="text-xs text-text-muted">Admin Panel</p>
+                  <p className="text-xs text-primary-200">Admin Panel</p>
                 </div>
               )}
             </Link>
@@ -174,7 +193,7 @@ const AdminLayout = () => {
             {menuItems.map((section, idx) => (
               <div key={idx} className="mb-6">
                 {isSidebarOpen && (
-                  <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-3">
+                  <h3 className="text-xs font-semibold text-primary-200 uppercase tracking-wider mb-3 px-3">
                     {section.title}
                   </h3>
                 )}
@@ -182,44 +201,107 @@ const AdminLayout = () => {
                   {section.items.map((item, index) => {
                     const Icon = item.icon;
                     const active = isActive(item.path);
+                    const hasSubmenu = Boolean(item.children);
+                    const isSubmenuOpen = item.name === 'Products'
+                      ? isProductsMenuOpen
+                      : isCategoriesMenuOpen;
                     
                     return (
                       <li key={index}>
-                        <Link
-                          to={item.path}
-                          onClick={() => {
-                            if (window.innerWidth < 1024) {
-                              setIsSidebarOpen(false);
-                            }
-                          }}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
-                            active 
-                              ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25' 
-                              : 'text-text-muted hover:bg-white/10 hover:text-white'
-                          }`}
-                          title={!isSidebarOpen ? item.name : ''}
-                        >
-                          <Icon className="w-5 h-5 flex-shrink-0" />
-                          {isSidebarOpen && (
-                            <>
-                              <span className="font-medium text-sm">{item.name}</span>
-                              {item.badge && (
-                                <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${
-                                  active 
-                                    ? 'bg-white/20 text-white' 
-                                    : 'bg-white/10 text-text-muted'
-                                }`}>
-                                  {item.badge}
-                                </span>
-                              )}
-                            </>
+                        <div className="space-y-1">
+                          <div className="flex items-center">
+                            {hasSubmenu && isSidebarOpen ? (
+                              <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-primary-200">
+                                <Icon className="w-5 h-5 flex-shrink-0" />
+                                <span className="font-medium text-sm">{item.name}</span>
+                                {item.badge && (
+                                  <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-primary-200">
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <Link
+                                to={item.path}
+                                onClick={() => {
+                                  if (window.innerWidth < 1024) {
+                                    setIsSidebarOpen(false);
+                                  }
+                                }}
+                                className={`flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
+                                  active
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                                    : 'text-primary-200 hover:bg-white/10 hover:text-white'
+                                }`}
+                                title={!isSidebarOpen ? item.name : ''}
+                              >
+                                <Icon className="w-5 h-5 flex-shrink-0" />
+                                {isSidebarOpen && (
+                                  <>
+                                    <span className="font-medium text-sm">{item.name}</span>
+                                    {item.badge && (
+                                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${
+                                        active
+                                          ? 'bg-white/20 text-white'
+                                          : 'bg-white/10 text-primary-200'
+                                      }`}>
+                                        {item.badge}
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                                {!isSidebarOpen && item.badge && (
+                                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                                    {item.badge.length > 2 ? '!' : item.badge}
+                                  </span>
+                                )}
+                              </Link>
+                            )}
+                            {hasSubmenu && isSidebarOpen && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.name === 'Products') {
+                                    setIsProductsMenuOpen((open) => !open);
+                                  } else {
+                                    setIsCategoriesMenuOpen((open) => !open);
+                                  }
+                                }}
+                                aria-label={`${isSubmenuOpen ? 'Collapse' : 'Expand'} ${item.name.toLowerCase()} menu`}
+                                aria-expanded={isSubmenuOpen}
+                                className="rounded-lg p-2 text-primary-200 transition hover:bg-white/10 hover:text-white"
+                              >
+                                <ChevronDown className={`h-4 w-4 transition-transform ${isSubmenuOpen ? 'rotate-180' : ''}`} />
+                              </button>
+                            )}
+                          </div>
+                          {hasSubmenu && isSidebarOpen && isSubmenuOpen && (
+                            <ul className="ml-5 space-y-1 border-l border-white/10 pl-3">
+                              {item.children.map((child) => {
+                                const childActive = location.pathname === child.path;
+                                return (
+                                  <li key={child.path}>
+                                    <Link
+                                      to={child.path}
+                                      onClick={() => {
+                                        if (window.innerWidth < 1024) {
+                                          setIsSidebarOpen(false);
+                                        }
+                                      }}
+                                      className={`block rounded-lg px-3 py-2 text-sm transition ${
+                                        childActive
+                                          ? 'bg-white/10 font-medium text-white'
+                                          : 'text-primary-200 hover:bg-white/10 hover:text-white'
+                                      }`}
+                                    >
+                                      {child.name}
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
                           )}
-                          {!isSidebarOpen && item.badge && (
-                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                              {item.badge.length > 2 ? '!' : item.badge}
-                            </span>
-                          )}
-                        </Link>
+                        </div>
                       </li>
                     );
                   })}
@@ -234,7 +316,7 @@ const AdminLayout = () => {
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:bg-white/10 hover:text-white transition-all duration-200`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-primary-200 hover:bg-white/10 hover:text-white transition-all duration-200`}
               title={!isSidebarOpen ? 'View Store' : ''}
             >
               <Home className="w-5 h-5" />
@@ -268,12 +350,12 @@ const AdminLayout = () => {
 
               <div className="flex items-center gap-2 lg:gap-3">
                 {/* Notifications */}
-                <button className="p-2 hover:bg-background-muted rounded-lg transition-colors relative">
+                {/* <button className="p-2 hover:bg-background-muted rounded-lg transition-colors relative">
                   <Bell className="w-5 h-5 text-text-secondary" />
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                     3
                   </span>
-                </button>
+                </button> */}
 
                 {/* Profile Dropdown */}
                 <div className="relative">

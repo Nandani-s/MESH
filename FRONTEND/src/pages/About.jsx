@@ -40,10 +40,10 @@ const About = () => {
   ];
 
   const team = [
-    { name: 'Sarah Johnson', role: 'Founder & CEO', initials: 'SJ' },
-    { name: 'Emily Chen', role: 'Creative Director', initials: 'EC' },
-    { name: 'Maria Garcia', role: 'Head of Design', initials: 'MG' },
-    { name: 'Lisa Thompson', role: 'Marketing Director', initials: 'LT' },
+    { name: 'Sarah Johnson', role: 'Founder & CEO', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=640&h=640&q=85' },
+    { name: 'Emily Chen', role: 'Creative Director', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=640&h=640&q=85' },
+    { name: 'Maria Garcia', role: 'Head of Design', photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=640&h=640&q=85' },
+    { name: 'Lisa Thompson', role: 'Marketing Director', photo: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=640&h=640&q=85' },
   ];
 
   const milestones = [
@@ -80,34 +80,20 @@ const About = () => {
         }
       />
 
-      {/* Stats Section */}
-      <section className="py-16 bg-surface">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-50 rounded-2xl mb-4">
-                  <stat.icon className="w-8 h-8 text-primary-500" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-text-primary mb-2">{stat.value}</div>
-                <div className="text-text-muted font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+   
 
       {/* Our Story Section */}
       <section className="py-20 lg:py-28 bg-background-light">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary-100 via-accent-50 to-secondary-100 aspect-[6/7] flex items-center justify-center">
-                <div className="text-center px-8">
-                  <div className="text-8xl mb-6">✨</div>
-                  <h3 className="text-2xl font-bold text-primary-600">{storeName}</h3>
-                  <p className="text-text-muted mt-2">Elevating Everyday Style</p>
-                </div>
+              <div className="relative aspect-[6/7] overflow-hidden rounded-3xl bg-gradient-to-br from-primary-100 via-accent-50 to-secondary-100 shadow-2xl">
+                <img
+                  src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1200&h=1400&q=85"
+                  alt="A curated display of women's clothing in a fashion boutique"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="absolute -bottom-6 -right-6 bg-surface-light shadow-2xl rounded-2xl p-6 border border-border-light">
                 <Quote className="w-8 h-8 text-primary-400 mb-2" />
@@ -150,6 +136,23 @@ const About = () => {
         </div>
       </section>
 
+	     {/* Stats Section */}
+      <section className="py-16 bg-surface">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-50 rounded-2xl mb-4">
+                  <stat.icon className="w-8 h-8 text-primary-500" />
+                </div>
+                <div className="text-3xl lg:text-4xl font-bold text-text-primary mb-2">{stat.value}</div>
+                <div className="text-text-muted font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Our Values */}
       <section className="py-20 lg:py-28 bg-surface">
         <div className="max-w-7xl mx-auto px-4">
@@ -178,46 +181,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="py-20 lg:py-28 bg-background-light">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-text-primary mb-4">
-              Our Milestones
-            </h2>
-            <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-              Key moments that shaped our journey
-            </p>
-          </div>
-          <div className="max-w-3xl mx-auto">
-            <div className="relative">
-              {/* Timeline Line */}
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border transform md:-translate-x-px"></div>
-              
-              {/* Timeline Items */}
-              <div className="space-y-12">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className={`relative flex items-start gap-8 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
-                    {/* Timeline Dot */}
-                    <div className="absolute left-4 md:left-1/2 w-4 h-4 bg-primary-500 rounded-full transform -translate-x-1/2 border-4 border-background-light z-10"></div>
-                    
-                    {/* Content */}
-                    <div className={`ml-12 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-16 md:text-right' : 'md:pl-16'}`}>
-                      <div className="bg-surface-light rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border-light">
-                        <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-sm font-semibold mb-3">
-                          {milestone.year}
-                        </span>
-                        <h3 className="text-xl font-bold text-text-primary mb-2">{milestone.title}</h3>
-                        <p className="text-text-muted">{milestone.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+     
 
       {/* Team Section */}
       <section className="py-20 lg:py-28 bg-surface">
@@ -233,8 +197,13 @@ const About = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
               <div key={index} className="group text-center">
-                <div className="relative mb-6 overflow-hidden rounded-2xl aspect-square shadow-lg bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-white">{member.initials}</span>
+                <div className="relative mb-6 overflow-hidden rounded-2xl aspect-square shadow-lg bg-gradient-to-br from-primary-100 to-accent-100">
+                  <img
+                    src={member.photo}
+                    alt={`${member.name}, ${member.role}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <h3 className="text-lg font-bold text-text-primary mb-1">{member.name}</h3>
                 <p className="text-text-muted">{member.role}</p>

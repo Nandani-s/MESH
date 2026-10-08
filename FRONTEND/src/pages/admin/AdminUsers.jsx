@@ -187,7 +187,7 @@ const AdminUsers = () => {
 					  <p className="text-xs text-text-muted flex items-center gap-1 mt-1"><Phone className="w-3 h-3" />{user.phone}</p>
 					</td>
 					<td className="px-6 py-4">
-					  <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-fit ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-primary-100 text-primary-800'}`}>
+					  <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-fit ${user.role === 'admin' ? 'bg-accent-100 text-accent-800' : 'bg-primary-100 text-primary-800'}`}>
 						{user.role === 'admin' && <Shield className="w-3 h-3" />}
 						{user.role === 'admin' ? 'Admin' : 'Customer'}
 					  </span>
@@ -195,7 +195,7 @@ const AdminUsers = () => {
 					<td className="px-6 py-4">
 					  <button onClick={() => toggleStatus(user)}
 						disabled={busyUserId === user._id || user._id === currentUser?.id}
-						className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed ${(user.status || 'active') === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}>
+						className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed ${(user.status || 'active') === 'active' ? 'bg-success-100 text-success-800 hover:bg-success-200' : 'bg-danger-100 text-danger-700 hover:bg-danger-200'}`}>
 						{(user.status || 'active') === 'active' ? <><CheckCircle className="w-3 h-3" /> Active</> : <><XCircle className="w-3 h-3" /> Inactive</>}
 					  </button>
 					</td>

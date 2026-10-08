@@ -112,7 +112,7 @@ const Header = () => {
       >
         {/* Row 1 — centered logo with search left, actions right */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative flex items-center justify-between h-16 lg:h-20 gap-3">
+          <div className="relative flex items-center justify-between h-[4.5rem] lg:h-24 gap-3">
             {/* Left: mobile menu + inline search */}
             <div className="flex items-center gap-2 z-10 min-w-0">
               <button
@@ -149,7 +149,7 @@ const Header = () => {
               <img
                 src={logo}
                 alt="MESH — Women's Fashion"
-                className="h-8 sm:h-10 lg:h-14 w-auto object-contain"
+                className="h-9 sm:h-11 lg:h-16 w-auto object-contain"
               />
             </Link>
 

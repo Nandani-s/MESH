@@ -9,6 +9,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { categoryApi } from '../../api/categories';
 import { ApiError } from '../../api/client';
 
@@ -119,13 +120,13 @@ const AdminCategories = () => {
 		  <h1 className="text-3xl font-bold text-text-primary">Categories</h1>
 		  <p className="text-text-muted mt-1">Manage your product categories</p>
 		</div>
-		<button
-		  onClick={() => handleOpenModal()}
+		<Link
+		  to="/admin/categories/new"
 		  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition flex items-center gap-2"
 		>
 		  <Plus className="w-4 h-4" />
 		  Add Category
-		</button>
+		</Link>
 	  </div>
 
 	  {/* Search and Filter */}
