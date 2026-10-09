@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { wishlistApi } from '../api/wishlist';
+import { wishlistApi } from '../api/Wishlist';
 import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext(undefined);
