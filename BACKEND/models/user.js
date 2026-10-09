@@ -29,9 +29,16 @@ const user = new mongoose.Schema({
 		type:String,
 		required:true,
 	},
+	lastLoginAt:{
+		type:Date,
+		default:null,
+	},
 	avatar:{
 		type:String,
 		
+	},
+	avatarPublicId:{
+		type:String,
 	},
 	loginOtp: {
 		 type: String, 

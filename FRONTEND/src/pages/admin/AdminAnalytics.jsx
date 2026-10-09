@@ -5,11 +5,266 @@ import {
   Users, Loader2, AlertCircle, BarChart3
 } from 'lucide-react';
 import { apiGet, ApiError } from '../../api/client';
+import { useSettings } from '../../context/SettingsContext';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const CATEGORY_COLORS = ['#B85C4A', '#D99A8B', '#E8C5BC', '#C97864', '#B89A7A', '#7A625B'];
 const AVAILABILITY_COLORS = { InStock: '#6F8767', OutOfStock: '#B85C4A', PreOrder: '#B89A7A' };
+const CHART_COLORS = ['#B85C4A', '#D99A8B', '#B89A7A', '#7A8A70', '#7F9AA5', '#8A7899'];
+const SEGMENT_COLORS = { New: '#D99A8B', Loyal: '#7A8A70', VIP: '#B85C4A', 'At risk': '#8A7899', Lost: '#7F9AA5' };
+
+const ChartCard = ({ title, subtitle, children }) => (
+  <section className="overflow-hidden rounded-xl border border-border-light bg-surface-light shadow-sm">
+    <div className="border-b border-border-light p-5 sm:p-6">
+      <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+      <p className="mt-1 text-xs text-text-muted">{subtitle}</p>
+    </div>
+    <div className="p-4 sm:p-6">{children}</div>
+  </section>
+);
+
+const ChartEmpty = () => (
+  <p className="py-12 text-center text-sm text-text-muted">No data available for this chart yet.</p>
+);
+
+const LineChart = ({ data, valueKey, formatValue }) => {
+  const max = Math.max(...data.map((point) => point[valueKey]), 1);
+  const points = data.map((point, index) => ({
+    ...point,
+    x: data.length === 1 ? 250 : 48 + (index * 420) / (data.length - 1),
+    y: 210 - (point[valueKey] / max) * 160,
+  }));
+
+  return (
+    <svg viewBox="0 0 500 260" role="img" aria-label="Monthly revenue line chart" className="h-auto w-full">
+      {[0, 0.25, 0.5, 0.75, 1].map((step) => {
+        const y = 210 - step * 160;
+        return (
+          <g key={step}>
+            <line x1="48" x2="480" y1={y} y2={y} stroke="#F1E4E1" strokeDasharray="4 6" />
+            <text x="42" y={y + 4} textAnchor="end" fontSize="9" fill="#7A625B">
+              {formatValue((step * max))}
+            </text>
+          </g>
+        );
+      })}
+      <polyline
+        points={points.map(({ x, y }) => `${x},${y}`).join(' ')}
+        fill="none"
+        stroke="#B85C4A"
+        strokeWidth="3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {points.map(({ x, y, label, [valueKey]: value }) => (
+        <g key={label}>
+          <circle cx={x} cy={y} r="5" fill="#FFFDFC" stroke="#B85C4A" strokeWidth="3">
+            <title>{`${label}: ${formatValue(value)}`}</title>
+          </circle>
+          <text x={x} y="238" textAnchor="middle" fontSize="10" fill="#7A625B">{label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+const DonutChart = ({ items, centerLabel }) => {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  const segments = items.map((item, index) => {
+    const startAngle = total
+      ? (items.slice(0, index).reduce((sum, previous) => sum + previous.value, 0) / total) * 360
+      : 0;
+    const endAngle = startAngle + (total ? (item.value / total) * 360 : 0);
+    const start = {
+      x: 100 + 72 * Math.cos((Math.PI * (startAngle - 90)) / 180),
+      y: 100 + 72 * Math.sin((Math.PI * (startAngle - 90)) / 180),
+    };
+    const end = {
+      x: 100 + 72 * Math.cos((Math.PI * (endAngle - 90)) / 180),
+      y: 100 + 72 * Math.sin((Math.PI * (endAngle - 90)) / 180),
+    };
+    return {
+      ...item,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+      fullCircle: endAngle - startAngle >= 359.999,
+      path: `M 100 100 L ${start.x} ${start.y} A 72 72 0 ${endAngle - startAngle > 180 ? 1 : 0} 1 ${end.x} ${end.y} Z`,
+    };
+  });
+
+  return (
+    <div className="flex flex-col items-center gap-5 sm:flex-row">
+      <svg viewBox="0 0 200 200" role="img" aria-label="Donut chart showing customer segments" className="w-full max-w-[200px] shrink-0">
+        {segments.map((segment) => segment.fullCircle ? (
+          <circle key={segment.name} cx="100" cy="100" r="72" fill={segment.color} />
+        ) : (
+          <path key={segment.name} d={segment.path} fill={segment.color} />
+        ))}
+        <circle cx="100" cy="100" r="42" fill="#FFFDFC" />
+        <text x="100" y="97" textAnchor="middle" fontSize="20" fontWeight="700" fill="#3B2925">{total.toLocaleString()}</text>
+        <text x="100" y="115" textAnchor="middle" fontSize="9" fill="#7A625B">{centerLabel}</text>
+      </svg>
+      <div className="grid w-full grid-cols-2 gap-2" aria-label="Customer segment legend">
+        {segments.map(({ name, value, color }) => (
+          <div key={name} className="flex items-center justify-between gap-2 rounded-lg bg-background-muted/60 px-3 py-2 text-xs">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+              <span className="truncate text-text-primary">{name}</span>
+            </span>
+            <span className="font-semibold text-text-primary">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ScatterChart = ({ points, formatValue }) => {
+  const maxFrequency = Math.max(...points.map((point) => point.frequency), 1);
+  const maxSpend = Math.max(...points.map((point) => point.spend), 1);
+  return (
+    <svg viewBox="0 0 500 280" role="img" aria-label="Scatter plot of order frequency and customer spend" className="h-auto w-full">
+      <line x1="52" y1="225" x2="480" y2="225" stroke="#BFA9A3" />
+      <line x1="52" y1="30" x2="52" y2="225" stroke="#BFA9A3" />
+      <text x="265" y="265" textAnchor="middle" fontSize="11" fill="#7A625B">Orders per customer</text>
+      <text x="14" y="130" textAnchor="middle" fontSize="11" fill="#7A625B" transform="rotate(-90 14 130)">Lifetime spend</text>
+      {points.map((point) => {
+        const x = 58 + (point.frequency / maxFrequency) * 405;
+        const y = 218 - (point.spend / maxSpend) * 175;
+        return (
+          <circle key={point.label} cx={x} cy={y} r="5" fill={SEGMENT_COLORS[point.segment]} fillOpacity=".8">
+            <title>{`${point.label} (${point.segment}): ${point.frequency} orders, ${formatValue(point.spend)}`}</title>
+          </circle>
+        );
+      })}
+    </svg>
+  );
+};
+
+const HeatmapChart = ({ matrix }) => {
+  const max = Math.max(...matrix.flat(), 1);
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return (
+    <div className="overflow-x-auto">
+      <div role="img" aria-label="Heatmap of order activity by weekday and Nepal time hour" className="min-w-[540px]">
+        <div className="mb-2 grid grid-cols-[2rem_repeat(24,minmax(0,1fr))] gap-1">
+          <span />
+          {Array.from({ length: 24 }, (_, hour) => (
+            <span key={hour} className="text-center text-[8px] text-text-muted">{hour % 3 === 0 ? hour : ''}</span>
+          ))}
+        </div>
+        {matrix.map((hours, dayIndex) => (
+          <div key={days[dayIndex]} className="mb-1 grid grid-cols-[2rem_repeat(24,minmax(0,1fr))] items-center gap-1">
+            <span className="text-[10px] text-text-muted">{days[dayIndex]}</span>
+            {hours.map((count, hour) => (
+              <span
+                key={hour}
+                title={`${days[dayIndex]} ${hour}:00 — ${count} orders`}
+                className="aspect-square rounded-[2px]"
+                style={{ backgroundColor: count ? `rgba(184, 92, 74, ${0.15 + (count / max) * 0.85})` : '#F1E4E1' }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const FunnelChart = ({ stages }) => {
+  const max = Math.max(...stages.map((stage) => stage.visitors), 1);
+  return (
+    <div className="space-y-3">
+      {stages.map((stage, index) => {
+        const width = Math.max((stage.visitors / max) * 100, stage.visitors ? 12 : 0);
+        return (
+          <div key={stage.name} className="flex items-center gap-3">
+            <span className="w-28 shrink-0 text-xs text-text-secondary">{stage.name}</span>
+            <div className="h-8 flex-1 rounded-r-lg bg-background-muted">
+              <div
+                className="flex h-full items-center justify-between rounded-r-lg px-2 text-xs font-semibold text-white transition-all"
+                style={{ width: `${width}%`, backgroundColor: CHART_COLORS[index % CHART_COLORS.length], minWidth: stage.visitors ? '4rem' : 0 }}
+              >
+                {stage.visitors > 0 && <><span>{stage.visitors}</span><span>{stage.conversionRate}%</span></>}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <p className="text-right text-[10px] text-text-muted">Conversion from previous step</p>
+    </div>
+  );
+};
+
+const StackedBarChart = ({ months, colors, formatValue }) => {
+  const categories = [...new Set(months.flatMap((month) => Object.keys(month.categories)))];
+  const totals = months.map((month) => Object.values(month.categories).reduce((sum, value) => sum + value, 0));
+  const max = Math.max(...totals, 1);
+  return (
+    <div>
+      <svg viewBox="0 0 540 250" role="img" aria-label="Stacked bar chart of monthly sales by product category" className="h-auto w-full">
+        {[0, 0.5, 1].map((step) => {
+          const y = 195 - step * 155;
+          return <line key={step} x1="38" x2="525" y1={y} y2={y} stroke="#F1E4E1" strokeDasharray="4 6" />;
+        })}
+        {months.map((month, monthIndex) => {
+          const x = 55 + monthIndex * 78;
+          let height = 0;
+          return (
+            <g key={month.label}>
+              {categories.map((category, categoryIndex) => {
+                const value = month.categories[category] || 0;
+                const segmentHeight = (value / max) * 155;
+                const y = 195 - height - segmentHeight;
+                height += segmentHeight;
+                return value ? (
+                  <rect key={category} x={x} y={y} width="38" height={segmentHeight} fill={colors[categoryIndex % colors.length]}>
+                    <title>{`${month.label} ${category}: ${formatValue(value)}`}</title>
+                  </rect>
+                ) : null;
+              })}
+              <text x={x + 19} y="215" textAnchor="middle" fontSize="10" fill="#7A625B">{month.label}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+        {categories.map((category, index) => (
+          <span key={category} className="flex items-center gap-1.5 text-[10px] text-text-muted">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: colors[index % colors.length] }} />
+            {category}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BubbleChart = ({ points, formatValue }) => {
+  const maxPrice = Math.max(...points.map((point) => point.price), 1);
+  const maxQuantity = Math.max(...points.map((point) => point.quantity), 1);
+  const maxRevenue = Math.max(...points.map((point) => point.revenue), 1);
+  return (
+    <svg viewBox="0 0 500 280" role="img" aria-label="Bubble chart of average product price, units sold, and revenue" className="h-auto w-full">
+      <line x1="52" y1="225" x2="480" y2="225" stroke="#BFA9A3" />
+      <line x1="52" y1="30" x2="52" y2="225" stroke="#BFA9A3" />
+      <text x="265" y="265" textAnchor="middle" fontSize="11" fill="#7A625B">Average selling price</text>
+      <text x="14" y="130" textAnchor="middle" fontSize="11" fill="#7A625B" transform="rotate(-90 14 130)">Units sold</text>
+      {points.map((point, index) => {
+        const x = 58 + (point.price / maxPrice) * 405;
+        const y = 218 - (point.quantity / maxQuantity) * 175;
+        const radius = 5 + (point.revenue / maxRevenue) * 13;
+        return (
+          <circle key={point.name} cx={x} cy={y} r={radius} fill={CHART_COLORS[index % CHART_COLORS.length]} fillOpacity=".65">
+            <title>{`${point.name}: ${formatValue(point.price)} average, ${point.quantity} units, ${formatValue(point.revenue)} revenue`}</title>
+          </circle>
+        );
+      })}
+    </svg>
+  );
+};
 
 const AdminAnalytics = () => {
+  const { settings } = useSettings();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -101,8 +356,8 @@ const AdminAnalytics = () => {
               {[
                 { title: 'Total Products', value: data.totals.products.toLocaleString(), icon: Package, color: 'from-primary-500 to-primary-700', real: true },
                 { title: 'Total Users', value: data.totals.users.toLocaleString(), icon: Users, color: 'from-accent-500 to-accent-700', real: true },
-                { title: 'Total Revenue', value: '—', icon: DollarSign, color: 'from-primary-300 to-primary-500', real: false },
-                { title: 'Total Orders', value: '—', icon: ShoppingCart, color: 'from-primary-500 to-primary-600', real: false },
+                { title: 'Total Revenue', value: formatCurrency(data.totals.revenue, settings.currency), icon: DollarSign, color: 'from-primary-300 to-primary-500', real: true },
+                { title: 'Total Orders', value: data.totals.orders.toLocaleString(), icon: ShoppingCart, color: 'from-primary-500 to-primary-600', real: true },
               ].map(({ title, value, icon: Icon, color, real }) => (
                 <div key={title} className={`bg-surface-light rounded-xl shadow-sm border border-border-light p-6 ${!real ? 'opacity-50' : ''}`}>
                   <div className="flex items-center justify-between">
@@ -117,6 +372,78 @@ const AdminAnalytics = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <ChartCard title="Top-selling products" subtitle="Units sold in the last 6 months">
+                {data.topProducts.length === 0 ? <ChartEmpty /> : (
+                  <div className="space-y-3">
+                    {data.topProducts.map((product, index) => {
+                      const max = Math.max(...data.topProducts.map((item) => item.quantity), 1);
+                      return (
+                        <div key={product.name}>
+                          <div className="mb-1 flex items-center justify-between gap-3 text-sm">
+                            <span className="truncate font-medium text-text-primary">{product.name}</span>
+                            <span className="shrink-0 text-text-muted">{product.quantity} sold</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-background-muted">
+                            <div className="h-2 rounded-full" style={{ width: `${(product.quantity / max) * 100}%`, backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </ChartCard>
+
+              <ChartCard title="Revenue trend" subtitle="Monthly order revenue in the last 6 months">
+                {data.monthlyRevenue.every((month) => month.revenue === 0) ? <ChartEmpty /> : (
+                  <LineChart data={data.monthlyRevenue} valueKey="revenue" formatValue={(value) => formatCurrency(value, settings.currency)} />
+                )}
+              </ChartCard>
+
+              <ChartCard title="Customer segments" subtitle="Purchasers grouped by purchase history">
+                <DonutChart
+                  items={data.customerSegments.map(({ name, customers }) => ({ name, value: customers }))}
+                  centerLabel="Customers"
+                />
+                <p className="mt-3 text-xs text-text-muted">VIP: 5+ orders or Rs 50,000+ spend · At risk: 91-180 days since order · Lost: 181+ days since order</p>
+              </ChartCard>
+
+              <ChartCard title="Customer purchase patterns" subtitle="Purchase frequency vs. lifetime spend">
+                {data.spendingCustomers.length === 0 ? <ChartEmpty /> : (
+                  <>
+                    <ScatterChart points={data.spendingCustomers} formatValue={(value) => formatCurrency(value, settings.currency)} />
+                    <div className="mt-2 flex flex-wrap gap-4">
+                      {Object.entries(SEGMENT_COLORS).map(([segment, color]) => (
+                        <span key={segment} className="flex items-center gap-1.5 text-[10px] text-text-muted">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                          {segment}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </ChartCard>
+
+              <ChartCard title="Purchase activity" subtitle="Order count by Nepal time, weekday and hour">
+                <HeatmapChart matrix={data.purchaseHeatmap} />
+              </ChartCard>
+
+              <ChartCard title="Shopping funnel" subtitle="Visitors progressing through the purchase journey">
+                <FunnelChart stages={data.funnel} />
+                <p className="mt-3 text-xs text-text-muted">Event-based tracking starts from the date this analytics update is deployed.</p>
+              </ChartCard>
+
+              <ChartCard title="Monthly sales by category" subtitle="Revenue stacked by product category">
+                {data.monthlyCategorySales.every((month) => Object.values(month.categories).every((value) => value === 0))
+                  ? <ChartEmpty />
+                  : <StackedBarChart months={data.monthlyCategorySales} colors={CHART_COLORS} formatValue={(value) => formatCurrency(value, settings.currency)} />}
+              </ChartCard>
+
+              <ChartCard title="Product performance bubbles" subtitle="Average selling price vs. units sold; bubble size shows revenue">
+                {data.productBubbles.length === 0 ? <ChartEmpty /> : <BubbleChart points={data.productBubbles} formatValue={(value) => formatCurrency(value, settings.currency)} />}
+              </ChartCard>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

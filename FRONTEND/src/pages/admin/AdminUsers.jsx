@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Search, Edit, Trash2, Mail, Phone,
-  CheckCircle, XCircle, Shield, Loader2, AlertCircle, X
+  CheckCircle, XCircle, Loader2, AlertCircle, X
 } from 'lucide-react';
 import { usersApi } from '../../api/users';
 import { ApiError } from '../../api/client';
@@ -14,7 +14,6 @@ const AdminUsers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +26,7 @@ const AdminUsers = () => {
 	setLoadError('');
 	try {
 	  const res = await usersApi.getAll();
-	  setUsers(res.data || []);
+	  setUsers((res.data || []).filter((user) => user.role === 'user'));
 	} catch (error) {
 	  setLoadError(error instanceof ApiError ? error.message : 'Failed to load users.');
 	} finally {
@@ -55,7 +54,11 @@ const AdminUsers = () => {
 	setFormError('');
 	try {
 	  const res = await usersApi.update(editingUser._id, formData);
-	  setUsers(prev => prev.map(u => u._id === editingUser._id ? res.data : u));
+	  if (res.data.role === 'user') {
+		setUsers(prev => prev.map(u => u._id === editingUser._id ? res.data : u));
+	  } else {
+		setUsers(prev => prev.filter(u => u._id !== editingUser._id));
+	  }
 	  setShowModal(false);
 	} catch (error) {
 	  setFormError(error instanceof ApiError ? error.message : 'Failed to update user.');
@@ -94,13 +97,11 @@ const AdminUsers = () => {
   const filteredUsers = users.filter(user => {
 	const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
 						  user.email.toLowerCase().includes(searchTerm.toLowerCase());
-	const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-	return matchesSearch && matchesRole;
+	return matchesSearch;
   });
 
   const totalUsers = users.length;
   const activeUsers = users.filter(u => (u.status || 'active') === 'active').length;
-  const adminUsers = users.filter(u => u.role === 'admin').length;
   const thisMonth = users.filter(u => {
 	const d = new Date(u.createdAt); const n = new Date();
 	return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
@@ -109,15 +110,14 @@ const AdminUsers = () => {
   return (
 	<div className="space-y-6">
 	  <div>
-		<h1 className="text-3xl font-bold text-text-primary">Users</h1>
-		<p className="text-text-muted mt-1">Manage your customers and administrators</p>
+		<h1 className="text-3xl font-bold text-text-primary">Customers</h1>
+		<p className="text-text-muted mt-1">Manage your store customers</p>
 	  </div>
 
-	  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+	  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
 		{[
-		  { label: 'Total Users', value: totalUsers },
-		  { label: 'Active Users', value: activeUsers },
-		  { label: 'Admins', value: adminUsers },
+		  { label: 'Total Customers', value: totalUsers },
+		  { label: 'Active Customers', value: activeUsers },
 		  { label: 'New This Month', value: thisMonth },
 		].map((stat) => (
 		  <div key={stat.label} className="bg-surface-light rounded-xl shadow-sm border border-border-light p-4">
@@ -135,12 +135,6 @@ const AdminUsers = () => {
 			  onChange={(e) => setSearchTerm(e.target.value)}
 			  className="w-full pl-10 pr-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary" />
 		  </div>
-		  <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-			className="px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary">
-			<option value="all">All Roles</option>
-			<option value="user">Customers</option>
-			<option value="admin">Admins</option>
-		  </select>
 		</div>
 	  </div>
 
@@ -163,7 +157,7 @@ const AdminUsers = () => {
 			<table className="w-full">
 			  <thead className="bg-background-muted">
 				<tr>
-				  {['User', 'Contact', 'Role', 'Status', 'Joined', 'Actions'].map(h => (
+				  {['Customer', 'Contact', 'Status', 'Joined', 'Actions'].map(h => (
 					<th key={h} className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">{h}</th>
 				  ))}
 				</tr>
@@ -185,12 +179,6 @@ const AdminUsers = () => {
 					<td className="px-6 py-4">
 					  <p className="text-sm text-text-primary flex items-center gap-1"><Mail className="w-3 h-3" />{user.email}</p>
 					  <p className="text-xs text-text-muted flex items-center gap-1 mt-1"><Phone className="w-3 h-3" />{user.phone}</p>
-					</td>
-					<td className="px-6 py-4">
-					  <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-fit ${user.role === 'admin' ? 'bg-accent-100 text-accent-800' : 'bg-primary-100 text-primary-800'}`}>
-						{user.role === 'admin' && <Shield className="w-3 h-3" />}
-						{user.role === 'admin' ? 'Admin' : 'Customer'}
-					  </span>
 					</td>
 					<td className="px-6 py-4">
 					  <button onClick={() => toggleStatus(user)}
@@ -221,7 +209,7 @@ const AdminUsers = () => {
 		<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
 		  <div className="bg-surface-light rounded-xl shadow-xl max-w-md w-full">
 			<div className="p-6 border-b border-border-light flex justify-between items-center">
-			  <h2 className="text-xl font-semibold text-text-primary">Edit User</h2>
+			  <h2 className="text-xl font-semibold text-text-primary">Edit Customer</h2>
 			  <button onClick={() => setShowModal(false)} className="text-text-muted hover:text-text-primary"><X className="w-5 h-5" /></button>
 			</div>
 			<form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -244,12 +232,10 @@ const AdminUsers = () => {
 			  <div>
 				<label className="block text-sm font-medium text-text-primary mb-2">Role</label>
 				<select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-				  disabled={editingUser._id === currentUser?.id}
-				  className="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary disabled:bg-background-muted disabled:cursor-not-allowed">
+				  className="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary">
 				  <option value="user">Customer</option>
-				  <option value="admin">Administrator</option>
+				  <option value="admin">Admin</option>
 				</select>
-				{editingUser._id === currentUser?.id && <p className="text-xs text-text-muted mt-1">You can't change your own role</p>}
 			  </div>
 			  <div>
 				<label className="block text-sm font-medium text-text-primary mb-2">Status</label>

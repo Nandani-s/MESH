@@ -3,13 +3,14 @@ import PageHeader from '../components/ui/PageHeader';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Heart, Zap, Tag,
-  Percent, ArrowRight, Loader2, Package
+  Percent, ArrowRight, Loader2
 } from 'lucide-react';
 import { productApi } from '../api/products';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import ProductImage from '../components/ui/ProductImage';
 
 // Sale ends 7 days from today — change this to a fixed date for a real campaign
 const SALE_END = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -134,13 +135,7 @@ const Sale = () => {
 					  className="bg-surface-light rounded-2xl p-5 border border-border-light hover:border-warning-300 hover:shadow-xl transition-all duration-300 block">
 					  <div className="flex gap-4 mb-4">
 						<div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-background-muted">
-						  {deal.image ? (
-							<img src={deal.image} alt={deal.name} className="w-full h-full object-cover" />
-						  ) : (
-							<div className="w-full h-full flex items-center justify-center">
-							  <Package className="w-8 h-8 text-primary-200" />
-							</div>
-						  )}
+						  <ProductImage src={deal.image} alt={deal.name} className="w-full h-full object-cover" />
 						</div>
 						<div className="flex-1 min-w-0">
 						  <h3 className="font-semibold text-text-primary mb-1 line-clamp-1">{deal.name}</h3>
@@ -197,14 +192,8 @@ const Sale = () => {
 					  <Link key={product._id} to={`/product/${product._id}`}
 						className="group flex h-full flex-col bg-surface-light rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 border border-border-light hover:border-danger-200">
 						<div className="relative overflow-hidden aspect-square bg-background-muted">
-						  {product.image ? (
-							<img src={product.image} alt={product.name}
-							  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-						  ) : (
-							<div className="w-full h-full bg-linear-to-br from-danger-50 to-accent-50 flex items-center justify-center">
-							  <Package className="w-12 h-12 text-danger-200" />
-							</div>
-						  )}
+						  <ProductImage src={product.image} alt={product.name}
+							className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
 						  <span className="absolute top-2 left-2 bg-danger-500 text-white px-2 py-1 rounded-md text-[10px] font-bold">
 							-{discount}%
 						  </span>

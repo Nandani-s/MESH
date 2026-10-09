@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './client';
+import { apiGet, apiPost, apiPutMultipart } from './client';
 
 export const authApi = {
   register: (payload) => apiPost('/user/register', payload),
@@ -7,4 +7,5 @@ export const authApi = {
   // Hits the protected /auth route; the httpOnly cookie authenticates this
   // request automatically, no token handling needed on the frontend.
   getCurrentUser: () => apiGet('/user/auth'),
+  uploadAvatar: (formData) => apiPutMultipart('/user/profile/avatar', formData),
 };

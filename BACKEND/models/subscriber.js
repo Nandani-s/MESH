@@ -9,6 +9,17 @@ const subscriberSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    status: {
+      type: String,
+      enum: ["active", "unsubscribed"],
+      default: "active",
+      required: true,
+    },
+    subscribedAt: {
+      type: Date,
+      default: Date.now,
+      required: true,
+    },
   },
   { timestamps: true }
 );

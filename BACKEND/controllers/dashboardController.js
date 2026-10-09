@@ -17,7 +17,7 @@ const getDashboardStats = async (req, res) => {
       newUsersThisMonth,
     ] = await Promise.all([
       Product.countDocuments(),
-      User.countDocuments(),
+      User.countDocuments({ role: "user" }),
       Category.countDocuments(),
 
       // Total items saved across all wishlists
@@ -57,13 +57,14 @@ const getDashboardStats = async (req, res) => {
       ]),
 
       // 5 most recently registered users
-      User.find()
+      User.find({ role: "user" })
         .select("name email createdAt role")
         .sort({ createdAt: -1 })
         .limit(5),
 
       // Users who joined this calendar month
       User.countDocuments({
+        role: "user",
         createdAt: {
           $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
         },

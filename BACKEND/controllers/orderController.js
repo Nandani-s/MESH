@@ -49,15 +49,21 @@ const updateOrderStatus = async (req, res) => {
 // POST /api/order — create order from cart (customer)
 const createOrder = async (req, res) => {
   try {
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, analyticsVisitorId } = req.body;
 
     if (!shippingAddress || !paymentMethod) {
       return res.status(400).json({ success: false, message: "Shipping address and payment method are required" });
     }
+    if (analyticsVisitorId !== undefined && (
+      typeof analyticsVisitorId !== "string" ||
+      !/^[\w-]{16,64}$/.test(analyticsVisitorId)
+    )) {
+      return res.status(400).json({ success: false, message: "Invalid analytics visitor ID" });
+    }
 
     // Get user's cart
     const cart = await Cart.findOne({ user: req.user.id })
-      .populate("items.product", "name image price availability");
+      .populate("items.product", "name image price availability category");
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ success: false, message: "Your cart is empty" });
@@ -78,6 +84,7 @@ const createOrder = async (req, res) => {
     const items = cart.items.map((item) => ({
       product: item.product._id,
       name: item.product.name,
+      category: item.product.category || "Uncategorised",
       image: item.product.image,
       price: item.product.price,
       quantity: item.quantity,
@@ -91,6 +98,7 @@ const createOrder = async (req, res) => {
       shippingAddress,
       paymentMethod,
       totalAmount,
+      analyticsVisitorId,
     });
 
     // Clear the cart after placing order

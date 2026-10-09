@@ -13,6 +13,7 @@ import { formatCurrency } from '../utils/formatCurrency';
 import Container from '../components/ui/Container';
 import PageHeader from '../components/ui/PageHeader';
 import ProductCard from '../components/ui/ProductCard';
+import ProductImage from '../components/ui/ProductImage';
 
 const CategoryPage = () => {
   const { slug } = useParams();
@@ -180,13 +181,7 @@ const CategoryPage = () => {
 				<Link key={product._id} to={`/product/${product._id}`}
 				  className="group flex gap-6 bg-surface-light rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 border border-border-light hover:border-primary-200 p-4">
 				  <div className="w-28 h-36 flex-shrink-0 rounded-xl overflow-hidden bg-background-muted">
-					{product.image ? (
-					  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-					) : (
-					  <div className="w-full h-full flex items-center justify-center">
-						<Package className="w-8 h-8 text-primary-200" />
-					  </div>
-					)}
+					<ProductImage src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
 				  </div>
 				  <div className="flex-1 flex flex-col justify-between min-w-0">
 					<div>

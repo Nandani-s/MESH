@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { otpApi } from '../api/otp';
+import { authApi } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginOtp() {
@@ -70,12 +71,16 @@ export default function LoginOtp() {
     setLoading(true);
     try {
       const res = await otpApi.verifyLoginOtp(email.trim().toLowerCase(), otpString);
-      // Update auth context
-      if (setUser) setUser(res.data);
+      const session = await authApi.getCurrentUser();
+      if (String(session.data?._id) !== String(res.data?._id)) {
+        setUser(null);
+        throw new Error('Could not verify the login session. Please sign in again.');
+      }
+      setUser(session.data);
       setMessage('Login successful! Redirecting...');
       setTimeout(() => navigate('/'), 800);
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid OTP. Try again.');
+      setError(err.message || 'Invalid OTP. Try again.');
       // Clear OTP on failure
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();

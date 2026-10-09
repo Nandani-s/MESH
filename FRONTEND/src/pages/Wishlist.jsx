@@ -17,6 +17,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import ProductImage from '../components/ui/ProductImage';
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -165,7 +166,7 @@ const Wishlist = () => {
                         {/* Image */}
                         <div className="relative overflow-hidden aspect-[3/4]">
                           <Link to={`/product/${item._id}`}>
-                            <img
+                            <ProductImage
                               src={item.image}
                               alt={item.name}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -260,7 +261,7 @@ const Wishlist = () => {
                         className="group bg-surface-light rounded-2xl overflow-hidden border border-border-light opacity-75"
                       >
                         <div className="relative overflow-hidden aspect-[3/4]">
-                          <img
+                          <ProductImage
                             src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover grayscale"
@@ -336,7 +337,7 @@ const Wishlist = () => {
                       className="group bg-surface-light rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 border border-border-light hover:border-primary-200"
                     >
                       <div className="aspect-[3/4] overflow-hidden">
-                        <img
+                        <ProductImage
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

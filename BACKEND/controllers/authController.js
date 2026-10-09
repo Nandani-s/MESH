@@ -3,6 +3,7 @@ import { User } from "../models/user.js";
 import jwt from "jsonwebtoken";
 import generateOtp from "../utils/generateOtp.js";
 import { sendLoginOtp, sendResetOtp } from "../utils/sendEmail.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 
 
 const accessTokensecret = async (user) => {// ye function user ke data ko token me convert krta hai, taki usko verify kr sake ki user kaun hai, aur uske pass kya permissions hai
@@ -17,6 +18,47 @@ const accessTokensecret = async (user) => {// ye function user ke data ko token 
 		process.env.JWT_SECRET_KEY,
 		{ expiresIn: process.env.JWT_EXPIRES_IN }
 	)
+};
+
+const uploadProfileAvatar = async (req, res) => {
+	try {
+		if (!req.file) {
+			return res.status(400).json({ success: false, message: "Select a profile photo to upload." });
+		}
+
+		const uploadedImage = await uploadOnCloudinary(req.file.path, "profiles");
+		if (!uploadedImage) {
+			return res.status(500).json({ success: false, message: "Profile photo upload failed." });
+		}
+
+		const user = await User.findById(req.user._id).select("-password");
+		if (!user) {
+			await deleteFromCloudinary(uploadedImage.public_id).catch((error) =>
+				console.error("Failed to remove orphaned profile photo:", error.message)
+			);
+			return res.status(404).json({ success: false, message: "User not found." });
+		}
+
+		const previousPublicId = user.avatarPublicId;
+		user.avatar = uploadedImage.secure_url;
+		user.avatarPublicId = uploadedImage.public_id;
+		await user.save();
+
+		if (previousPublicId) {
+			await deleteFromCloudinary(previousPublicId).catch((error) =>
+				console.error("Failed to delete previous profile photo:", error.message)
+			);
+		}
+
+		return res.status(200).json({
+			success: true,
+			message: "Profile photo updated.",
+			data: user,
+		});
+	} catch (error) {
+		console.error("Profile photo update failed:", error);
+		return res.status(500).json({ success: false, message: "Failed to update profile photo." });
+	}
 };
 // ─── LOGIN OTP ───
 
@@ -84,6 +126,7 @@ const verifyLoginOtp = async (req, res) => {
     // Clear OTP
     user.loginOtp = null;
     user.loginOtpExpiry = null;
+    user.lastLoginAt = new Date();
     await user.save();
 
     // Generate JWT and set cookie (same as your existing login)
@@ -108,6 +151,8 @@ const verifyLoginOtp = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        lastLoginAt: user.lastLoginAt,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -307,6 +352,9 @@ const login = async (req, res) => {
 			})
 		}
 
+		user.lastLoginAt = new Date();
+		await user.save();
+
 		const accessToken = await accessTokensecret(user);//ye function user ke data ko token me convert krta hai, taki usko verify kr sake ki user kaun hai, aur uske pass kya permissions hai
 
 		return res.status(200).cookie('accesstoken', accessToken, accessTokenCookieOptions)
@@ -319,6 +367,8 @@ const login = async (req, res) => {
 					email: user.email,
 					phone: user.phone,
 					role: user.role,
+					lastLoginAt: user.lastLoginAt,
+					avatar: user.avatar,
 				},
 			})
 
@@ -399,13 +449,7 @@ const logout = async (req, res) => {
 
 const allusers = async (req, res) => {
 	try {
-		const Users = await User.find().select("-password")
-		if (!Users) {
-			return res.status(404).json({
-				message: "no user found"
-
-			})
-		}
+		const Users = await User.find({ role: "user" }).select("-password")
 
 		return res.status(200).json({
 			message: "users found",
@@ -486,6 +530,7 @@ export {
 	allusers,
 	deleteuser,
 	updateUser,
+	uploadProfileAvatar,
 	 requestLoginOtp,
   verifyLoginOtp,
   requestPasswordReset,

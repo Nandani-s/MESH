@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { Package, PackageOpen, Truck, MapPin, CreditCard } from 'lucide-react';
+import { PackageOpen, Truck, MapPin, CreditCard } from 'lucide-react';
 import Container from '../components/ui/Container';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -8,6 +8,7 @@ import { apiGet } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import ProductImage from '../components/ui/ProductImage';
 
 const STATUS_STYLES = {
   pending: 'bg-warning-100 text-warning-700',
@@ -121,13 +122,7 @@ const MyOrders = () => {
                     {(order.items || []).map((item, index) => (
                       <li key={index} className="flex items-center gap-4">
                         <div className="w-14 h-16 rounded-lg overflow-hidden bg-background-muted shrink-0">
-                          {item.image ? (
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Package className="w-5 h-5 text-border-strong" />
-                            </div>
-                          )}
+                          <ProductImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-text-primary truncate">{item.name}</p>

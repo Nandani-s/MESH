@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Package, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import ProductImage from './ProductImage';
 
 const AVAILABILITY_STYLES = {
   InStock: 'bg-success-100 text-success-700',
@@ -28,7 +29,6 @@ const ProductCard = ({ product }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { settings } = useSettings();
   const { addToCart } = useCart();
-  const [imageError, setImageError] = useState(false);
   const [cartStatus, setCartStatus] = useState('idle');
 
   if (!product) return null;
@@ -75,21 +75,13 @@ const ProductCard = ({ product }) => {
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-primary-100 bg-surface-light shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-linear-to-br from-secondary-50 via-background-light to-primary-50">
-        {product.image && !imageError ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-            <Package className="w-9 h-9 text-primary-300" />
-            <span className="text-[11px] text-text-muted">Image unavailable</span>
-          </div>
-        )}
-        {product.image && !imageError && (
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        {product.image && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/10 to-transparent" />
         )}
 

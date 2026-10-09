@@ -11,6 +11,7 @@ import { ApiError } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import ProductImage from '../../components/ui/ProductImage';
 
 const NOW = Date.now();
 
@@ -142,7 +143,7 @@ const AdminDashboard = () => {
                       }`}>{index + 1}</span>
                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-background-muted flex items-center justify-center flex-shrink-0">
                         {item.product.image
-                          ? <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                          ? <ProductImage src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                           : <ImageOff className="w-4 h-4 text-text-muted" />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -209,7 +210,7 @@ const AdminDashboard = () => {
                   <div key={product._id} className="flex items-center gap-4 p-4 hover:bg-background-muted transition">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-background-muted flex items-center justify-center flex-shrink-0">
                       {product.image
-                        ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                        ? <ProductImage src={product.image} alt={product.name} className="w-full h-full object-cover" />
                         : <ImageOff className="w-4 h-4 text-text-muted" />}
                     </div>
                     <div className="flex-1 min-w-0">

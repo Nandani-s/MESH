@@ -4,6 +4,7 @@ const orderItemSchema = new mongoose.Schema({
   product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
   // Snapshot fields — preserve the data at time of order
   name: { type: String, required: true },
+  category: { type: String, default: "Uncategorised" },
   image: { type: String },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
@@ -42,6 +43,7 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
     totalAmount: { type: Number, required: true },
+    analyticsVisitorId: { type: String, maxlength: 64 },
     // Khalti/eSewa transaction reference
     transactionId: { type: String, default: null },
   },

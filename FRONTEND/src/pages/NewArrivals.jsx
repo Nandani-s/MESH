@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import ProductImage from '../components/ui/ProductImage';
 
 const getDaysAgo = (dateStr) => {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
@@ -209,14 +210,8 @@ const NewArrivals = () => {
                   <Link key={product._id} to={`/product/${product._id}`}
                     className="group flex h-full flex-col bg-surface-light rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 border border-border-light hover:border-primary-200">
                     <div className="relative overflow-hidden aspect-square bg-background-muted">
-                      {product.image ? (
-                        <img src={product.image} alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full bg-linear-to-br from-primary-50 to-accent-50 flex items-center justify-center">
-                          <Package className="w-12 h-12 text-primary-200" />
-                        </div>
-                      )}
+                      <ProductImage src={product.image} alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
 
                       {badge && (
                         <span className={`absolute top-2 left-2 px-2 py-1 rounded-md text-[10px] font-semibold text-white ${badge.color}`}>

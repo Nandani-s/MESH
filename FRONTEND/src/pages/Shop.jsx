@@ -11,6 +11,7 @@ import { formatCurrency } from '../utils/formatCurrency';
 import Container from '../components/ui/Container';
 import PageHeader from '../components/ui/PageHeader';
 import ProductCard from '../components/ui/ProductCard';
+import ProductImage from '../components/ui/ProductImage';
 
 const AVAILABILITY_OPTIONS = [
   { value: 'InStock', label: 'In Stock' },
@@ -209,7 +210,10 @@ const Shop = () => {
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const visibleProducts = filteredProducts.slice(0, safePage * PAGE_SIZE);
+  const visibleProducts = filteredProducts.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
 
   const clearFilters = () => {
     setSelectedCategories([]);
@@ -220,8 +224,6 @@ const Shop = () => {
   };
 
   const activeFilterCount = selectedCategories.length + selectedAvailability.length;
-
-  const hasMore = visibleProducts.length < filteredProducts.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -384,14 +386,8 @@ const Shop = () => {
                         <Link key={product._id} to={`/product/${product._id}`}
                           className="group flex gap-4 bg-surface-light rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-border-light hover:border-primary-200 p-3 sm:p-4">
                           <div className="w-28 h-28 sm:w-36 sm:h-36 shrink-0 rounded-xl overflow-hidden bg-background-muted">
-                            {product.image ? (
-                              <img src={product.image} alt={product.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package className="w-10 h-10 text-primary-200" />
-                              </div>
-                            )}
+                            <ProductImage src={product.image} alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                           </div>
                           <div className="flex-1 flex flex-col justify-between min-w-0 py-1">
                             <div>
@@ -447,35 +443,53 @@ const Shop = () => {
                   </div>
                 )}
 
-                {/* Load more / pagination */}
-                <div className="mt-10 flex flex-col items-center gap-4">
-                  {hasMore && (
+                {totalPages > 1 && (
+                  <nav
+                    aria-label="Product pages"
+                    className="mt-10 flex flex-wrap items-center justify-center gap-2"
+                  >
                     <button
-                      onClick={() => setPage(p => p + 1)}
-                      className="inline-flex items-center gap-2 border border-border-strong hover:border-primary-500 text-text-primary hover:text-primary-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300">
-                      Load More ({filteredProducts.length - visibleProducts.length} remaining)
+                      type="button"
+                      onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+                      disabled={safePage === 1}
+                      aria-label="Previous page"
+                      className="inline-flex items-center gap-1 rounded-lg border border-border-light px-3 py-2 text-sm text-text-primary transition-colors hover:bg-background-muted disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
                     </button>
-                  )}
-                  {totalPages > 1 && (
-                    <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
                       <button
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={safePage === 1}
-                        className="p-2 rounded-lg border border-border-light disabled:opacity-40 hover:bg-background-muted transition-colors">
-                        <ChevronLeft className="w-4 h-4" />
+                        key={pageNumber}
+                        type="button"
+                        onClick={() => setPage(pageNumber)}
+                        aria-label={`Page ${pageNumber}`}
+                        aria-current={safePage === pageNumber ? 'page' : undefined}
+                        className={`h-10 min-w-10 rounded-lg border px-3 text-sm font-medium transition-colors ${
+                          safePage === pageNumber
+                            ? 'border-primary-500 bg-primary-500 text-white'
+                            : 'border-border-light text-text-primary hover:bg-background-muted'
+                        }`}
+                      >
+                        {pageNumber}
                       </button>
-                      <span className="text-sm text-text-muted">
-                        Page {safePage} of {totalPages}
-                      </span>
-                      <button
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={safePage === totalPages}
-                        className="p-2 rounded-lg border border-border-light disabled:opacity-40 hover:bg-background-muted transition-colors">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setPage((currentPage) => Math.min(totalPages, currentPage + 1))}
+                      disabled={safePage === totalPages}
+                      aria-label="Next page"
+                      className="inline-flex items-center gap-1 rounded-lg border border-border-light px-3 py-2 text-sm text-text-primary transition-colors hover:bg-background-muted disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </nav>
+                )}
+                <p className="mt-4 text-center text-sm text-text-muted" aria-live="polite">
+                  Showing {(safePage - 1) * PAGE_SIZE + 1}–
+                  {Math.min(safePage * PAGE_SIZE, filteredProducts.length)} of {filteredProducts.length} products
+                </p>
               </>
             )}
           </div>

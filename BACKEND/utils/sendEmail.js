@@ -4,10 +4,11 @@ import nodemailer from "nodemailer";
  * Send an email
  * @param {Object} opts
  * @param {string} opts.to
+ * @param {string|string[]} [opts.bcc]
  * @param {string} opts.subject
  * @param {string} opts.html
  */
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, bcc, subject, html }) => {
   // Create transporter at call-time so .env is definitely loaded
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -27,6 +28,7 @@ const sendEmail = async ({ to, subject, html }) => {
     const info = await transporter.sendMail({
       from: `"MESH Clothing" <${process.env.EMAIL_USER}>`,
       to,
+      ...(bcc ? { bcc } : {}),
       subject,
       html,
     });

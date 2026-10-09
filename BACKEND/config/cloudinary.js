@@ -1,7 +1,7 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs';
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath, folder = "products") => {
   // Configure here (not at module level) so dotenv has already loaded
   // process.env values by the time this function is called.
   cloudinary.v2.config({
@@ -14,7 +14,7 @@ const uploadOnCloudinary = async (localFilePath) => {
   try {
     const response = await cloudinary.v2.uploader.upload(localFilePath, {
       resource_type: "auto",
-      folder: "products",
+      folder,
     });
     fs.unlinkSync(localFilePath);
     console.log("Upload successful");

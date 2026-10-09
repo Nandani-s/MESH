@@ -7,6 +7,7 @@ import {
 import { apiGet, apiPut, ApiError } from '../../api/client';
 import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import ProductImage from '../../components/ui/ProductImage';
 
 const STATUS_COLORS = {
   delivered: 'bg-success-100 text-success-800',
@@ -218,7 +219,7 @@ const AdminOrders = () => {
 				  {selectedOrder.items.map((item, i) => (
 					<div key={i} className="flex items-center gap-3 border-b border-border-light pb-3">
 					  <div className="w-12 h-12 rounded-lg overflow-hidden bg-background-muted flex-shrink-0">
-						{item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-text-muted m-auto" />}
+						<ProductImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
 					  </div>
 					  <div className="flex-1 min-w-0">
 						<p className="font-medium text-text-primary truncate">{item.name}</p>

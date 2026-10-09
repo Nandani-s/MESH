@@ -22,12 +22,40 @@ import {
   Home
 } from 'lucide-react';
 
+const NEPAL_TIME_ZONE = 'Asia/Kathmandu';
+
+const formatNepalDate = (date, options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) =>
+  new Intl.DateTimeFormat('en-NP', {
+    timeZone: NEPAL_TIME_ZONE,
+    ...options,
+  }).format(date);
+
+const formatNepalTime = (date) =>
+  new Intl.DateTimeFormat('en-NP', {
+    timeZone: NEPAL_TIME_ZONE,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { settings } = useSettings();
   const [counts, setCounts] = useState({ products: null, categories: null, users: null });
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => window.clearInterval(timerId);
+  }, []);
+
+  const lastLoginAt = user?.lastLoginAt ? new Date(user.lastLoginAt) : null;
+  const lastLoginLabel =
+    lastLoginAt && !Number.isNaN(lastLoginAt.getTime())
+      ? `${formatNepalDate(lastLoginAt, { year: 'numeric', month: 'short', day: 'numeric' })} · ${formatNepalTime(lastLoginAt)}`
+      : 'Not available';
 
   useEffect(() => {
     apiGet('/dashboard')
@@ -343,10 +371,43 @@ const AdminLayout = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                type="button"
+                aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                 className="p-2 hover:bg-background-muted rounded-lg transition-colors"
               >
                 {isSidebarOpen ? <X className="w-5 h-5 text-text-secondary" /> : <Menu className="w-5 h-5 text-text-secondary" />}
               </button>
+
+              <div className="ml-auto grid w-fit min-w-0 grid-cols-3 gap-x-2 sm:gap-x-3 text-right">
+                <div className="min-w-0 max-w-28">
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wide text-text-muted">Date</p>
+                  <time
+                    dateTime={currentTime.toISOString()}
+                    title={formatNepalDate(currentTime)}
+                    className="block truncate text-[10px] sm:text-sm font-semibold text-text-primary"
+                  >
+                    {formatNepalDate(currentTime, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                  </time>
+                </div>
+                <div className="min-w-0 max-w-24">
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wide text-text-muted">Time</p>
+                  <time
+                    dateTime={currentTime.toISOString()}
+                    className="block truncate text-[10px] sm:text-sm font-semibold text-text-primary"
+                  >
+                    {formatNepalTime(currentTime)}
+                  </time>
+                </div>
+                <div className="min-w-0 max-w-36">
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wide text-text-muted">Last login</p>
+                  <time
+                    dateTime={lastLoginAt && !Number.isNaN(lastLoginAt.getTime()) ? lastLoginAt.toISOString() : undefined}
+                    className="block truncate text-[10px] sm:text-sm font-semibold text-text-primary"
+                  >
+                    {lastLoginLabel}
+                  </time>
+                </div>
+              </div>
 
               <div className="flex items-center gap-2 lg:gap-3">
                 {/* Notifications */}

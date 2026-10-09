@@ -20,6 +20,7 @@ import { categoryApi } from '../../api/categories';
 import { ApiError } from '../../api/client';
 import { useSettings } from '../../context/SettingsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import ProductImage from '../../components/ui/ProductImage';
 
 // Fallback list shown while categories are loading or if the fetch fails.
 // Keep this in sync with your Categories page as a last resort only.
@@ -143,6 +144,10 @@ const AdminProducts = () => {
 	  setFormError('A product image is required.');
 	  return;
 	}
+	if (formData.originalPrice && Number(formData.originalPrice) <= Number(formData.price)) {
+	  setFormError('Original price must be greater than the sale price.');
+	  return;
+	}
 
 	setIsSubmitting(true);
 	setFormError('');
@@ -153,7 +158,7 @@ const AdminProducts = () => {
 	fd.append('brand', formData.brand);
 	fd.append('category', formData.category);
 	fd.append('price', formData.price);
-	if (formData.originalPrice) fd.append('originalPrice', formData.originalPrice);
+	fd.append('originalPrice', formData.originalPrice);
 	fd.append('stock', formData.stock);
 	fd.append('availability', formData.availability);
 	if (imageFile) {
@@ -162,7 +167,10 @@ const AdminProducts = () => {
 
 	try {
 	  if (editingProduct) {
-		await productApi.update(editingProduct._id, fd);
+		const response = await productApi.update(editingProduct._id, fd);
+		if (response.notification) {
+		  window.alert(response.notification.message);
+		}
 	  } else {
 		await productApi.create(fd);
 	  }
@@ -322,11 +330,7 @@ const AdminProducts = () => {
 					<td className="px-5 py-4">
 					  <div className="flex min-w-0 items-center gap-3">
 						<div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-background-muted flex items-center justify-center">
-						  {product.image ? (
-							<img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-						  ) : (
-							<ImageOff className="h-5 w-5 text-text-muted" />
-						  )}
+						  <ProductImage src={product.image} alt={product.name} className="h-full w-full object-cover" />
 						</div>
 						<div className="min-w-0">
 						  <p className="max-w-xs truncate font-semibold text-text-primary">{product.name}</p>
@@ -556,7 +560,7 @@ const AdminProducts = () => {
 			  </div>
 			  <div>
 				<label className="block text-sm font-medium text-text-primary mb-2">
-				  Original Price ($) <span className="text-xs text-text-muted font-normal">— optional, shows strikethrough sale price</span>
+				  Original Price ($) <span className="text-xs text-text-muted font-normal">— optional, before discount</span>
 				</label>
 				<input
 				  type="number"
@@ -567,6 +571,9 @@ const AdminProducts = () => {
 				  onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
 				  className="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-surface-light text-text-primary"
 				/>
+				<p className="mt-1 text-xs text-text-muted">
+				  Set this above the current price to start a sale and notify active newsletter subscribers. Leave it empty to end the sale.
+				</p>
 			  </div>
 
 			  {formError && (

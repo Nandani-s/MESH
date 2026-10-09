@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { register ,login, auth, byid, logout, allusers, deleteuser, updateUser} from "../controllers/authController.js";
+import { register ,login, auth, byid, logout, allusers, deleteuser, updateUser, uploadProfileAvatar} from "../controllers/authController.js";
 import verifyUser, { requireAdmin } from "../middleware/authMiddleware.js";
+import { upload } from "../middleware/multer.js";
 import {
 
   requestLoginOtp,
@@ -19,6 +20,7 @@ const userRoute = Router();
 userRoute.route('/register').post(register)
 userRoute.route('/login').post(login)
 userRoute.route('/auth').get(verifyUser,auth)
+userRoute.route('/profile/avatar').put(verifyUser, upload.single("avatar"), uploadProfileAvatar)
 userRoute.route("/byid/:id").get(byid)
 userRoute.route("/logout").post(logout)
 userRoute.route("/alluser").get(verifyUser,requireAdmin,allusers)

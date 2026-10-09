@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
-  Heart, ShoppingCart, Star, Package, ArrowLeft,
+  Heart, ShoppingCart, Star, ArrowLeft,
   Truck, Shield, RotateCcw, ChevronRight, Loader2,
   AlertCircle, Minus, Plus, Share2, ZoomIn
 } from 'lucide-react';
@@ -12,8 +12,10 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
+import { trackAnalyticsEvent } from '../utils/analyticsTracking';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import ProductCard from '../components/ui/ProductCard';
+import ProductImage from '../components/ui/ProductImage';
 
 const TABS = [
   { id: 'description', label: 'Description' },
@@ -65,6 +67,7 @@ const ProductDetail = () => {
           related,
           categorySlug: cat?.slug || null,
         });
+        trackAnalyticsEvent('product_view', { productId: id });
         setFailure(null);
         setQuantity(1);
         setActiveTab('description');
@@ -152,14 +155,8 @@ const ProductDetail = () => {
           {/* Image */}
           <div className="space-y-4 lg:sticky lg:top-36">
             <div className="group relative rounded-3xl overflow-hidden aspect-square bg-gradient-to-br from-primary-50 to-accent-50 shadow-xl cursor-zoom-in">
-              {product.image ? (
-                <img src={product.image} alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-32 h-32 text-primary-200" />
-                </div>
-              )}
+              <ProductImage src={product.image} alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               {product.image && (
                 <span className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Hover to zoom">
                   <ZoomIn className="w-4 h-4" />

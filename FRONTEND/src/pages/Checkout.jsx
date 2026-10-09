@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, User, CreditCard,
@@ -12,12 +12,15 @@ import { apiPost } from '../api/client';
 import { formatCurrency } from '../utils/formatCurrency';
 import { paymentApi } from '../api/payment';
 import PageHeader from '../components/ui/PageHeader';
+import { getAnalyticsVisitorId, trackAnalyticsEvent } from '../utils/analyticsTracking';
+import ProductImage from '../components/ui/ProductImage';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const { items, cartTotal, cartCount, refetch } = useCart();
   const { settings } = useSettings();
+  const checkoutStarted = useRef(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +38,13 @@ export default function Checkout() {
     settings.khaltiEnabled ? 'Khalti' :
     settings.esewaEnabled ? 'eSewa' : 'COD'
   );
+
+  useEffect(() => {
+    if (isAuthenticated && items.length > 0 && !checkoutStarted.current) {
+      checkoutStarted.current = true;
+      trackAnalyticsEvent('checkout_started');
+    }
+  }, [isAuthenticated, items.length]);
 
   // ─── Shipping ───
   const freeShippingThreshold = settings.freeShippingThreshold || 0;
@@ -102,6 +112,7 @@ export default function Checkout() {
           note: form.note.trim(),
         },
         paymentMethod,
+        analyticsVisitorId: getAnalyticsVisitorId(),
       });
 
       const orderId = orderRes.data._id;
@@ -319,7 +330,7 @@ export default function Checkout() {
                     return (
                       <div key={p._id} className="flex gap-3 text-sm">
                         <div className="w-12 h-14 rounded-lg overflow-hidden bg-background-muted flex-shrink-0">
-                          {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-cover" />}
+                          <ProductImage src={p.image} alt={p.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{p.name}</p>

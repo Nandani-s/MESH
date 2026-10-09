@@ -1,5 +1,72 @@
 import { Product } from "../models/product.js";
+import { Subscriber } from "../models/subscriber.js";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
+import sendEmail from "../utils/sendEmail.js";
+
+const escapeHtml = (value) =>
+  String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character]);
+
+const sendSaleNotifications = async (product) => {
+  const subscribers = await Subscriber.find({
+    $or: [{ status: "active" }, { status: { $exists: false } }],
+  }).select("email").lean();
+
+  if (subscribers.length === 0) {
+    return { sent: 0, failed: 0, message: "No active subscribers to notify." };
+  }
+
+  const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
+  const productUrl = escapeHtml(`${frontendUrl}/product/${product._id}`);
+  const newsletterUrl = escapeHtml(`${frontendUrl}/#newsletter`);
+  const safeName = escapeHtml(product.name);
+  const currency = escapeHtml(product.priceCurrency || "RS");
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#292524;">
+      <h1 style="color:#be185d;">A MESH favorite is on sale</h1>
+      <p><strong>${safeName}</strong> is now available at a special price.</p>
+      <p style="font-size:20px;">
+        <strong>${currency} ${Number(product.price).toFixed(2)}</strong>
+        <span style="color:#78716c;text-decoration:line-through;margin-left:8px;">${currency} ${Number(product.originalPrice).toFixed(2)}</span>
+      </p>
+      <p><a href="${productUrl}" style="display:inline-block;padding:12px 20px;background:#be185d;color:#fff;text-decoration:none;border-radius:8px;">Shop the sale</a></p>
+      <p style="font-size:12px;color:#78716c;">To stop receiving these emails, visit <a href="${newsletterUrl}">newsletter preferences</a> and choose Unsubscribe.</p>
+    </div>
+  `;
+  const batches = [];
+  for (let index = 0; index < subscribers.length; index += 50) {
+    batches.push(subscribers.slice(index, index + 50).map(({ email }) => email));
+  }
+
+  let sent = 0;
+  let failed = 0;
+  for (const bcc of batches) {
+    const result = await sendEmail({
+      to: process.env.EMAIL_USER,
+      bcc,
+      subject: "A MESH product is on sale",
+      html,
+    });
+    if (result.success) sent += bcc.length;
+    else {
+      failed += bcc.length;
+      console.error(`Sale notification batch failed for product ${product._id}:`, result.error);
+    }
+  }
+
+  return {
+    sent,
+    failed,
+    message: failed === 0
+      ? `Sale notification sent to ${sent} subscriber${sent === 1 ? "" : "s"}.`
+      : `Sale notification failed for ${failed} subscriber${failed === 1 ? "" : "s"}.`,
+  };
+};
 
 
 // CREATE PRODUCT
@@ -180,6 +247,21 @@ const updateProduct = async (req, res) => {
       updateData.originalPrice = null; // clear the field if empty string sent
     }
 
+    const nextPrice = updateData.price ?? existingProduct.price;
+    const nextOriginalPrice = updateData.originalPrice !== undefined
+      ? updateData.originalPrice
+      : existingProduct.originalPrice;
+    if (nextOriginalPrice !== null && nextOriginalPrice !== undefined && nextOriginalPrice !== "") {
+      if (!Number.isFinite(Number(nextOriginalPrice)) || Number(nextOriginalPrice) <= Number(nextPrice)) {
+        return res.status(400).json({
+          success: false,
+          message: "Original price must be greater than the sale price.",
+        });
+      }
+    }
+    const isEnteringSale = !(existingProduct.originalPrice > existingProduct.price)
+      && nextOriginalPrice > nextPrice;
+
     // If a new image file was uploaded, replace the old one on Cloudinary.
     if (req.file) {
       const uploadedImage = await uploadOnCloudinary(req.file.path);
@@ -211,10 +293,25 @@ const updateProduct = async (req, res) => {
       }
     );
 
+    let notification;
+    if (isEnteringSale) {
+      try {
+        notification = await sendSaleNotifications(updatedProduct);
+      } catch (error) {
+        console.error(`Sale notifications failed for product ${updatedProduct._id}:`, error);
+        notification = {
+          sent: 0,
+          failed: null,
+          message: "Product was updated, but sale notifications could not be sent. Check the server logs.",
+        };
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      data: updatedProduct
+      data: updatedProduct,
+      ...(notification ? { notification } : {}),
     });
 
   } catch (error) {

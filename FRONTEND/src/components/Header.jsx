@@ -149,7 +149,7 @@ const Header = () => {
               <img
                 src={logo}
                 alt="MESH — Women's Fashion"
-                className="h-9 sm:h-11 lg:h-16 w-auto object-contain"
+                className="h-22 sm:h-28 lg:h-40 w-auto object-contain"
               />
             </Link>
 
@@ -180,6 +180,14 @@ const Header = () => {
                           <p className="text-xs text-text-muted truncate">{user?.email}</p>
                         </div>
                         <div className="py-2">
+                          <Link
+                            to="/profile"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-background-muted transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            My Profile
+                          </Link>
                           <Link
                             to="/orders"
                             onClick={() => setIsUserMenuOpen(false)}
@@ -311,7 +319,7 @@ const Header = () => {
           }`}
         >
           <div className="flex items-center justify-between px-5 h-16 border-b border-border-light shrink-0">
-            <img src={logo} alt="MESH" className="h-9 w-auto object-contain" />
+            <img src={logo} alt="MESH" className="h-22 w-auto object-contain" />
             <button
               type="button"
               aria-label="Close menu"
@@ -354,6 +362,15 @@ const Header = () => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-border-light space-y-1">
+              {isAuthenticated && (
+                <Link
+                  onClick={closeAll}
+                  to="/profile"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-text-secondary hover:bg-background-muted transition-colors"
+                >
+                  <User className="w-4 h-4" /> My Profile
+                </Link>
+              )}
               <Link
                 onClick={closeAll}
                 to="/cart"

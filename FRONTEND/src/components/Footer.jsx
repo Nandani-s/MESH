@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, ArrowRight,  } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
-import { apiPost, ApiError } from '../api/client';
+import Newsletter from './Newsletter';
 import logo from '../assets/logo.png';
 
 const Facebook = ({ className = 'w-5 h-5' }) => (
@@ -36,25 +35,7 @@ const FooterHeading = ({ children }) => (
 );
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
-  const [subscribeStatus, setSubscribeStatus] = useState('');
-  const [subscribeMsg, setSubscribeMsg] = useState('');
   const { settings } = useSettings();
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-    setSubscribeStatus('loading');
-    try {
-      const res = await apiPost('/subscribe', { email });
-      setSubscribeStatus('success');
-      setSubscribeMsg(res.message || 'Subscribed successfully!');
-      setEmail('');
-    } catch (error) {
-      setSubscribeStatus('error');
-      setSubscribeMsg(error instanceof ApiError ? error.message : 'Failed to subscribe. Please try again.');
-    }
-  };
 
   const quickLinks = [
     { name: 'About Us', path: '/about' },
@@ -82,62 +63,16 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-text-primary text-white">
-      {/* Newsletter — slim inline row */}
-      <div className="border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-center md:text-left">
-              <h3 className="text-lg lg:text-xl font-extrabold">
-                Subscribe to Our Newsletter
-              </h3>
-              <p className="text-white/50 text-sm">New arrivals and exclusive offers, no spam.</p>
-            </div>
-            <form onSubmit={handleSubscribe} className="w-full md:w-auto">
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setSubscribeStatus('');
-                  }}
-                  placeholder="Your email address"
-                  className="w-full md:w-72 px-4 py-2.5 rounded-lg bg-white/10 border border-white/15 text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={subscribeStatus === 'loading' || subscribeStatus === 'success'}
-                  className="px-5 py-2.5 bg-accent-500 hover:bg-accent-600 disabled:bg-accent-700 text-text-primary text-sm font-bold rounded-lg transition-all duration-300 flex items-center gap-2 group whitespace-nowrap"
-                >
-                  {subscribeStatus === 'loading'
-                    ? '...'
-                    : subscribeStatus === 'success'
-                      ? '✓ Done'
-                      : 'Subscribe'}
-                  {subscribeStatus !== 'loading' && subscribeStatus !== 'success' && (
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  )}
-                </button>
-              </div>
-              {subscribeMsg && (
-                <p className={`text-xs mt-1.5 ${subscribeStatus === 'success' ? 'text-accent-400' : 'text-danger-400'}`}>
-                  {subscribeMsg}
-                </p>
-              )}
-            </form>
-          </div>
-        </div>
-      </div>
-
+    <>
+      <Newsletter />
+      <footer className="bg-text-primary text-white">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-10">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1 space-y-4">
             <Link to="/" className="inline-block">
-              <img src={logo} alt="MESH" className="h-9 sm:h-10 w-auto object-contain" />
+              <img src={logo} alt="MESH" className="h-36 sm:h-40 w-auto object-contain brightness-0 invert" />
             </Link>
             <p className="text-white/55 text-sm leading-relaxed">
               Elegant, contemporary fashion curated to help you express your style with confidence.
@@ -238,11 +173,12 @@ const Footer = () => {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-xs text-white/45 flex items-center justify-center text-center">
-            © {new Date().getFullYear()} Sunflower🌻. All rights reserved.
+            © {new Date().getFullYear()} MESH. All rights reserved.
           </p>
         </div>
       </div>
-    </footer>
+      </footer>
+    </>
   );
 };
 

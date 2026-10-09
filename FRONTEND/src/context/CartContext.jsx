@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { cartApi } from '../api/cart';
 import { useAuth } from './AuthContext';
+import { trackAnalyticsEvent } from '../utils/analyticsTracking';
 
 const CartContext = createContext(undefined);
 
@@ -29,6 +30,7 @@ export function CartProvider({ children }) {
 	try {
 	  const res = await cartApi.addToCart(productId, quantity);
 	  setItems(res.data || []);
+	  trackAnalyticsEvent('add_to_cart', { productId });
 	  return true;
 	} catch {
 	  return false;

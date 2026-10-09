@@ -5,12 +5,17 @@ import {
   CheckCircle2,
   Download,
   Loader2,
+  Mail,
   Package,
+  Search,
+  Trash2,
   TrendingUp,
   Users,
+  UserRoundCheck,
+  UserRoundMinus,
   Warehouse,
 } from 'lucide-react';
-import { apiGet, ApiError } from '../../api/client';
+import { apiGet, apiPut, apiDelete, ApiError } from '../../api/client';
 
 const CATEGORY_COLORS = ['#B85C4A', '#D99A8B', '#E8C5BC', '#C97864', '#B89A7A', '#7A625B'];
 
@@ -18,6 +23,12 @@ const AdminReports = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [subscribers, setSubscribers] = useState([]);
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(true);
+  const [subscriberError, setSubscriberError] = useState('');
+  const [subscriberSearch, setSubscriberSearch] = useState('');
+  const [subscriberStatusFilter, setSubscriberStatusFilter] = useState('all');
+  const [busySubscriberId, setBusySubscriberId] = useState(null);
 
   useEffect(() => {
     Promise.all([apiGet('/dashboard'), apiGet('/analytics')])
@@ -44,6 +55,71 @@ const AdminReports = () => {
       })
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    apiGet('/newsletter')
+      .then((res) => setSubscribers(res.data || []))
+      .catch((err) => {
+        setSubscriberError(err instanceof ApiError ? err.message : 'Failed to load subscribers.');
+      })
+      .finally(() => setIsLoadingSubscribers(false));
+  }, []);
+
+  const filteredSubscribers = useMemo(() => subscribers.filter((subscriber) => {
+    const matchesSearch = subscriber.email.toLowerCase().includes(subscriberSearch.trim().toLowerCase());
+    const matchesStatus = subscriberStatusFilter === 'all' || subscriber.status === subscriberStatusFilter;
+    return matchesSearch && matchesStatus;
+  }), [subscribers, subscriberSearch, subscriberStatusFilter]);
+
+  const handleSubscriberStatus = async (subscriber) => {
+    const status = subscriber.status === 'active' ? 'unsubscribed' : 'active';
+    setBusySubscriberId(subscriber._id);
+    setSubscriberError('');
+    try {
+      const result = await apiPut(`/newsletter/${subscriber._id}`, { status });
+      setSubscribers((current) => current.map((item) => item._id === subscriber._id ? result.data : item));
+    } catch (err) {
+      setSubscriberError(err instanceof ApiError ? err.message : 'Failed to update subscriber.');
+    } finally {
+      setBusySubscriberId(null);
+    }
+  };
+
+  const handleDeleteSubscriber = async (subscriber) => {
+    if (!window.confirm(`Permanently remove ${subscriber.email} from the newsletter list?`)) return;
+    setBusySubscriberId(subscriber._id);
+    setSubscriberError('');
+    try {
+      await apiDelete(`/newsletter/${subscriber._id}`);
+      setSubscribers((current) => current.filter((item) => item._id !== subscriber._id));
+    } catch (err) {
+      setSubscriberError(err instanceof ApiError ? err.message : 'Failed to remove subscriber.');
+    } finally {
+      setBusySubscriberId(null);
+    }
+  };
+
+  const exportSubscribers = () => {
+    const csvCell = (value) => {
+      const safeValue = /^[=+\-@]/.test(String(value)) ? `'${value}` : String(value);
+      return `"${safeValue.replaceAll('"', '""')}"`;
+    };
+    const rows = [
+      ['Email', 'Status', 'Subscribed date'],
+      ...filteredSubscribers.map((subscriber) => [
+        subscriber.email,
+        subscriber.status,
+        new Date(subscriber.subscribedAt || subscriber.createdAt).toISOString(),
+      ]),
+    ];
+    const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'mesh-newsletter-subscribers.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const metrics = useMemo(() => {
     if (!data) return [];
@@ -297,6 +373,145 @@ const AdminReports = () => {
           </div>
         </>
       )}
+
+      <section className="overflow-hidden rounded-xl border border-border-light bg-surface-light shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border-light p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
+              <Mail className="h-5 w-5 text-primary-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Newsletter subscribers</h2>
+              <p className="mt-1 text-sm text-text-muted">Email addresses collected from the store newsletter form</p>
+            </div>
+          </div>
+          {!isLoadingSubscribers && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-background-muted px-3 py-1 text-xs font-semibold text-text-primary">
+                {subscribers.length.toLocaleString()} total
+              </span>
+              <span className="rounded-full bg-success-50 px-3 py-1 text-xs font-semibold text-success-700">
+                {subscribers.filter((subscriber) => subscriber.status === 'active').length.toLocaleString()} active
+              </span>
+              <button
+                type="button"
+                onClick={exportSubscribers}
+                disabled={filteredSubscribers.length === 0}
+                className="inline-flex items-center gap-2 rounded-lg border border-border-light px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-background-muted disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6">
+          {!isLoadingSubscribers && !subscriberError && (
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row">
+              <label className="relative min-w-0 flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="search"
+                  value={subscriberSearch}
+                  onChange={(event) => setSubscriberSearch(event.target.value)}
+                  placeholder="Search subscriber emails"
+                  className="w-full rounded-lg border border-border-light bg-surface-light py-2 pl-9 pr-3 text-sm text-text-primary outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+                />
+              </label>
+              <select
+                value={subscriberStatusFilter}
+                onChange={(event) => setSubscriberStatusFilter(event.target.value)}
+                aria-label="Filter newsletter subscribers by status"
+                className="rounded-lg border border-border-light bg-surface-light px-3 py-2 text-sm text-text-primary outline-none focus:border-primary-400"
+              >
+                <option value="all">All statuses</option>
+                <option value="active">Active</option>
+                <option value="unsubscribed">Unsubscribed</option>
+              </select>
+            </div>
+          )}
+
+          {subscriberError && (
+            <div className="mb-4 flex items-center gap-3 rounded-lg border border-danger-200 bg-danger-50 p-4">
+              <AlertCircle className="h-5 w-5 shrink-0 text-danger-500" />
+              <p className="text-sm text-danger-600">{subscriberError}</p>
+            </div>
+          )}
+
+          {isLoadingSubscribers ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+            </div>
+          ) : subscriberError && subscribers.length === 0 ? null : subscribers.length === 0 ? (
+            <p className="py-8 text-center text-sm text-text-muted">No newsletter subscribers yet.</p>
+          ) : filteredSubscribers.length === 0 ? (
+            <p className="py-8 text-center text-sm text-text-muted">No subscribers match your search or filter.</p>
+          ) : (
+            <div className="max-h-96 overflow-y-auto">
+              <table className="w-full text-left">
+                <thead className="sticky top-0 bg-background-muted text-xs uppercase tracking-wider text-text-muted">
+                  <tr>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Subscribed</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSubscribers.map((subscriber) => (
+                    <tr key={subscriber._id} className="border-t border-border-light">
+                      <td className="px-4 py-3 text-sm font-medium text-text-primary">{subscriber.email}</td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          subscriber.status === 'active'
+                            ? 'bg-success-50 text-success-700'
+                            : 'bg-background-muted text-text-muted'
+                        }`}>
+                          {subscriber.status === 'active' ? 'Active' : 'Unsubscribed'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-text-muted">
+                        {new Date(subscriber.subscribedAt || subscriber.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSubscriberStatus(subscriber)}
+                            disabled={busySubscriberId === subscriber._id}
+                            aria-label={`${subscriber.status === 'active' ? 'Unsubscribe' : 'Reactivate'} ${subscriber.email}`}
+                            title={subscriber.status === 'active' ? 'Unsubscribe' : 'Reactivate'}
+                            className="rounded-lg p-2 text-text-muted transition hover:bg-background-muted hover:text-primary-600 disabled:opacity-50"
+                          >
+                            {subscriber.status === 'active'
+                              ? <UserRoundMinus className="h-4 w-4" />
+                              : <UserRoundCheck className="h-4 w-4" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSubscriber(subscriber)}
+                            disabled={busySubscriberId === subscriber._id}
+                            aria-label={`Remove ${subscriber.email}`}
+                            title="Remove subscriber"
+                            className="rounded-lg p-2 text-text-muted transition hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

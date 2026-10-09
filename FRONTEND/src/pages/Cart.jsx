@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { formatCurrency } from '../utils/formatCurrency';
 import PageHeader from '../components/ui/PageHeader';
+import ProductImage from '../components/ui/ProductImage';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -115,14 +116,8 @@ const Cart = () => {
                     {/* Image */}
                     <Link to={`/product/${product._id}`}
                       className="w-24 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-background-muted">
-                      {product.image ? (
-                        <img src={product.image} alt={product.name}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="w-8 h-8 text-primary-200" />
-                        </div>
-                      )}
+                      <ProductImage src={product.image} alt={product.name}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                     </Link>
 
                     {/* Info */}

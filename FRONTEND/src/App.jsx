@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { trackAnalyticsEvent } from './utils/analyticsTracking';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -20,6 +21,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import Search from './pages/Search';
 import MyOrders from './pages/MyOrders';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Legal from './pages/Legal';
 
@@ -44,6 +46,12 @@ import ProductDetail from './pages/ProductDetail';
 
 // Main Layout for non-admin routes
 const MainLayout = () => {
+	const { pathname } = useLocation();
+
+	useEffect(() => {
+		trackAnalyticsEvent('visit');
+	}, [pathname]);
+
 	return (
 		<div className="flex flex-col min-h-screen">
 			<Header />
@@ -105,6 +113,7 @@ const App = () => {
 					<Route path="forgot-password" element={<ForgotPassword />} />
 					<Route path="checkout" element={<Checkout />} />
 					<Route path="orders" element={<MyOrders />} />
+					<Route path="profile" element={<Profile />} />
 					<Route path="search" element={<Search />} />
 					<Route path="terms" element={<Legal type="terms" />} />
 					<Route path="privacy" element={<Legal type="privacy" />} />
