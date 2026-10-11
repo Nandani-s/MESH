@@ -68,26 +68,32 @@ const initiateKhalti = async (req, res) => {
 // GET /api/payment/khalti/callback
 const khaltiCallback = async (req, res) => {
   try {
-    const { pidx, status, transaction_id } = req.query;
+    const { pidx } = req.query;
 
-    console.log("🔍 Khalti callback:", { pidx, status, transaction_id });
+    console.log("🔍 Khalti callback:", { pidx });
 
-    if (!pidx || (status && status.toLowerCase() !== "completed")) {
+    if (typeof pidx !== "string" || !pidx) {
+      console.error("  ❌ Khalti callback is missing a valid pidx");
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
-    // Verify with Khalti
     const verification = await payments.khalti.verifyPayment({ pidx });
     console.log("  verification:", verification);
 
     if (!isCompletedStatus(verification.status)) {
+      console.error("  ❌ Khalti payment is not completed:", verification.status);
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
-    // Find order by pidx (stored in transactionId)
-    const order = await Order.findOne({ transactionId: pidx });
+    const verifiedOrderId = verification.payment_details?.purchase_order_id;
+    let order = typeof verifiedOrderId === "string" && /^[\da-f]{24}$/i.test(verifiedOrderId)
+      ? await Order.findById(verifiedOrderId)
+      : null;
+
+    // Fall back to the pidx saved when checkout initiated the payment.
+    if (!order) order = await Order.findOne({ transactionId: pidx });
     if (!order) {
-      console.error("  ❌ Order not found for pidx:", pidx);
+      console.error("  ❌ No order matches the verified Khalti payment:", pidx);
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
     if (Number(verification.amount) !== Math.round(order.totalAmount * 100)) {
@@ -95,21 +101,23 @@ const khaltiCallback = async (req, res) => {
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
-    // Mark as paid
+    const wasAlreadyPaid = order.paymentStatus === "paid";
     order.paymentStatus = "paid";
     order.orderStatus = "processing";
-    order.transactionId = transaction_id || verification.transaction_id || pidx;
+    // Keep pidx so a repeated provider callback can find the same order.
+    order.transactionId = pidx;
     await order.save();
 
-    // Send confirmation email
-    try {
-      await sendEmail({
-        to: req.user?.email || order.shippingAddress.phone,
-        subject: `Payment Confirmed — #${order._id.toString().slice(-8).toUpperCase()}`,
-        html: `<h2>Payment received!</h2><p>Your order is being processed.</p>`,
-      });
-    } catch (e) {
-      console.error("Email failed:", e.message);
+    if (!wasAlreadyPaid) {
+      try {
+        await sendEmail({
+          to: req.user?.email || order.shippingAddress.phone,
+          subject: `Payment Confirmed — #${order._id.toString().slice(-8).toUpperCase()}`,
+          html: `<h2>Payment received!</h2><p>Your order is being processed.</p>`,
+        });
+      } catch (e) {
+        console.error("Email failed:", e.message);
+      }
     }
 
     return res.redirect(`${FRONTEND_URL}/payment/success?order=${order._id}`);
