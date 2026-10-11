@@ -21,7 +21,7 @@ export const trackAnalyticsEvent = (type, details = {}) => {
     const visitorId = getAnalyticsVisitorId();
     if (!visitorId) return Promise.resolve();
 
-    return apiPost('/analytics/event', {
+    return apiPost('/event', {
       visitorId,
       type,
       ...details,

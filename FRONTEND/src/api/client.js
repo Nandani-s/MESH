@@ -6,9 +6,13 @@
 // to change the base URL (e.g. for staging/prod) and one error shape for
 // every component to handle.
 
-// Set VITE_API_URL in your frontend .env (e.g. VITE_API_URL=http://localhost:5001/api).
+// Set VITE_API_URL to the backend origin or its /api URL.
 // Falls back to localhost:5001 so it still works if you haven't added the env var yet.
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const configuredApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001')
+  .replace(/\/+$/, '');
+const BASE_URL = /\/api$/i.test(configuredApiUrl)
+  ? configuredApiUrl
+  : `${configuredApiUrl}/api`;
 
 export class ApiError extends Error {
   constructor(message, status, data) {

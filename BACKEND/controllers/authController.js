@@ -139,7 +139,7 @@ const verifyLoginOtp = async (req, res) => {
     res.cookie("accesstoken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
     });
 
@@ -267,7 +267,7 @@ const parseExpiryToMs = (expiry) => {
 const accessTokenCookieOptions = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === "production", // secure cookies require HTTPS; allow plain http in dev
-	sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+	sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 	maxAge: parseExpiryToMs(process.env.JWT_EXPIRES_IN),
 };
 

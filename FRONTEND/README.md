@@ -1,16 +1,20 @@
-# React + Vite
+# MESH Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Production deployment
 
-Currently, two official plugins are available:
+Deploy `BACKEND` as a separate Vercel project with its project root set to
+`BACKEND`. Configure the backend's environment variables in Vercel, including
+`MONGO_URI`, `JWT_SECRET_KEY`, and `CORS_ORIGIN`. Set `CORS_ORIGIN` to the exact
+frontend origin, for example `https://mesh-3md7.vercel.app`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Set the frontend's Production `VITE_API_URL` to the backend's public origin (or
+its `/api` URL), then redeploy the frontend. The frontend client adds `/api`
+when it is not already present. Do not point this variable at the frontend URL.
 
-## React Compiler
+The backend uses secure cross-site auth cookies in production. Browsers must
+allow cookies between the separate frontend and backend domains.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local development
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Set `VITE_API_URL=http://localhost:5001/api` in the frontend `.env` file and run
+the frontend and backend in separate terminals.
