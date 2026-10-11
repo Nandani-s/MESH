@@ -1,11 +1,13 @@
 import dotenv from "dotenv";
 import { NepPayments } from "neppayments";
+import { getPublicUrls } from "./publicUrls.js";
 
 // Load .env BEFORE creating the payment instance
 dotenv.config({ path: "./.env" });
 
 const khaltiKey = process.env.KHALTI_SECRET_KEY;
 const esewaKey = process.env.ESEWA_SECRET_KEY;
+const { backendUrl, frontendUrl } = getPublicUrls();
 
 if (!khaltiKey) {
   console.warn("⚠️  KHALTI_SECRET_KEY missing from .env — Khalti payments disabled");
@@ -38,8 +40,8 @@ const payments =
               productCode: process.env.ESEWA_PRODUCT_CODE || "EPAYTEST",
               secretKey: esewaKey,
               environment: "sandbox",
-              successUrl: `${process.env.BACKEND_URL}/api/payment/esewa/callback`,
-              failureUrl: `${process.env.FRONTEND_URL}/payment/failure`,
+              successUrl: `${backendUrl}/api/payment/esewa/callback`,
+              failureUrl: `${frontendUrl}/payment/failure`,
             }
           : undefined,
       })

@@ -1,10 +1,9 @@
 import payments from "../config/payments.js";
 import { Order } from "../models/order.js";
 import sendEmail from "../utils/sendEmail.js";
+import { getPublicUrls } from "../config/publicUrls.js";
 
-// Fallback URLs in case .env isn't loaded
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5001";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const { backendUrl: BACKEND_URL, frontendUrl: FRONTEND_URL } = getPublicUrls();
 
 // ─── KHALTI ───
 

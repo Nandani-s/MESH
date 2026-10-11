@@ -4,8 +4,11 @@
 
 Deploy `BACKEND` as a separate Vercel project with its project root set to
 `BACKEND`. Configure the backend's environment variables in Vercel, including
-`MONGO_URI`, `JWT_SECRET_KEY`, and `CORS_ORIGIN`. Set `CORS_ORIGIN` to the exact
-frontend origin.
+`MONGO_URI`, `JWT_SECRET_KEY`, `CORS_ORIGIN`, `BACKEND_URL`, and `FRONTEND_URL`.
+Set `CORS_ORIGIN` and `FRONTEND_URL` to the exact frontend origin, and
+`BACKEND_URL` to the backend's public origin. Payment callbacks use Vercel's
+deployment URL and `CORS_ORIGIN` if either configured URL is missing or points
+to localhost in production.
 
 The frontend's `vercel.json` proxies `/api` to the backend, and the production
 API client uses that same-origin path so auth cookies work across browsers.
