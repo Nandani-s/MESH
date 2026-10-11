@@ -4,6 +4,8 @@ import sendEmail from "../utils/sendEmail.js";
 import { getPublicUrls } from "../config/publicUrls.js";
 
 const { backendUrl: BACKEND_URL, frontendUrl: FRONTEND_URL } = getPublicUrls();
+const isCompletedStatus = (status) =>
+  typeof status === "string" && status.toUpperCase() === "COMPLETED";
 
 // ─── KHALTI ───
 
@@ -70,7 +72,7 @@ const khaltiCallback = async (req, res) => {
 
     console.log("🔍 Khalti callback:", { pidx, status, transaction_id });
 
-    if (status !== "Completed") {
+    if (!pidx || (status && status.toLowerCase() !== "completed")) {
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
@@ -78,7 +80,7 @@ const khaltiCallback = async (req, res) => {
     const verification = await payments.khalti.verifyPayment({ pidx });
     console.log("  verification:", verification);
 
-    if (verification.status !== "Completed") {
+    if (!isCompletedStatus(verification.status)) {
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
@@ -88,11 +90,15 @@ const khaltiCallback = async (req, res) => {
       console.error("  ❌ Order not found for pidx:", pidx);
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
+    if (Number(verification.amount) !== Math.round(order.totalAmount * 100)) {
+      console.error("  ❌ Khalti payment amount does not match order:", order._id);
+      return res.redirect(`${FRONTEND_URL}/payment/failure`);
+    }
 
     // Mark as paid
     order.paymentStatus = "paid";
     order.orderStatus = "processing";
-    order.transactionId = transaction_id;
+    order.transactionId = transaction_id || verification.transaction_id || pidx;
     await order.save();
 
     // Send confirmation email
@@ -167,26 +173,55 @@ const esewaCallback = async (req, res) => {
     const { data } = req.query;
     console.log("🔍 eSewa callback received");
 
-    const verification = await payments.esewa.verifyPayment({ data });
-    console.log("  verification:", verification);
-
-    if (!verification.success) {
+    if (typeof data !== "string") {
+      console.error("  ❌ eSewa callback is missing payment data");
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
-    // Decode to get transaction_uuid (= order id)
-    const decoded = JSON.parse(Buffer.from(data, "base64").toString());
-    const orderId = decoded.transaction_uuid;
+    let decoded;
+    try {
+      decoded = JSON.parse(Buffer.from(data, "base64").toString("utf8"));
+    } catch (error) {
+      console.error("  ❌ Could not decode eSewa callback data:", error.message);
+      return res.redirect(`${FRONTEND_URL}/payment/failure`);
+    }
 
+    const orderId = decoded.transaction_uuid;
     const order = await Order.findById(orderId);
     if (!order) {
       console.error("  ❌ Order not found:", orderId);
       return res.redirect(`${FRONTEND_URL}/payment/failure`);
     }
 
+    const productCode =
+      process.env.ESEWA_PRODUCT_CODE || "EPAYTEST";
+    if (
+      decoded.product_code !== productCode ||
+      Number(decoded.total_amount) !== Number(order.totalAmount)
+    ) {
+      console.error("  ❌ eSewa payment details do not match order:", order._id);
+      return res.redirect(`${FRONTEND_URL}/payment/failure`);
+    }
+
+    const verification = await payments.esewa.verifyPayment({
+      product_code: productCode,
+      transaction_uuid: orderId,
+      total_amount: Number(order.totalAmount),
+    });
+    console.log("  verification:", verification);
+
+    if (!isCompletedStatus(verification.status)) {
+      return res.redirect(`${FRONTEND_URL}/payment/failure`);
+    }
+    if (Number(verification.amount) !== Number(order.totalAmount)) {
+      console.error("  ❌ eSewa verified amount does not match order:", order._id);
+      return res.redirect(`${FRONTEND_URL}/payment/failure`);
+    }
+
     order.paymentStatus = "paid";
     order.orderStatus = "processing";
-    order.transactionId = decoded.transaction_code || verification.transaction_code;
+    order.transactionId =
+      decoded.transaction_code || verification.transaction_id || orderId;
     await order.save();
 
     return res.redirect(`${FRONTEND_URL}/payment/success?order=${order._id}`);
