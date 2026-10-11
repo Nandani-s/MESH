@@ -115,7 +115,7 @@ const createProduct = async (req, res) => {
     }
 
     // UPLOAD IMAGE TO CLOUDINARY
-    const uploadedImage = await uploadOnCloudinary(req.file.path);
+    const uploadedImage = await uploadOnCloudinary(req.file.buffer);
     if (!uploadedImage) {
       return res.status(500).json({
         success: false,
@@ -264,7 +264,7 @@ const updateProduct = async (req, res) => {
 
     // If a new image file was uploaded, replace the old one on Cloudinary.
     if (req.file) {
-      const uploadedImage = await uploadOnCloudinary(req.file.path);
+      const uploadedImage = await uploadOnCloudinary(req.file.buffer);
 
       if (!uploadedImage) {
         return res.status(500).json({

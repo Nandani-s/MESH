@@ -49,6 +49,7 @@ const addToCart = async (req, res) => {
     await cart.populate("items.product", "name image price availability");
     return res.status(200).json({ success: true, data: cart.items });
   } catch (error) {
+    console.error("Add-to-cart failed:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

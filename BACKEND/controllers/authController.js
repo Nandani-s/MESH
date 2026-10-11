@@ -26,7 +26,7 @@ const uploadProfileAvatar = async (req, res) => {
 			return res.status(400).json({ success: false, message: "Select a profile photo to upload." });
 		}
 
-		const uploadedImage = await uploadOnCloudinary(req.file.path, "profiles");
+		const uploadedImage = await uploadOnCloudinary(req.file.buffer, "profiles");
 		if (!uploadedImage) {
 			return res.status(500).json({ success: false, message: "Profile photo upload failed." });
 		}

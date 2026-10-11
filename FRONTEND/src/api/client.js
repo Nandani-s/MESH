@@ -6,13 +6,14 @@
 // to change the base URL (e.g. for staging/prod) and one error shape for
 // every component to handle.
 
-// Set VITE_API_URL to the backend origin or its /api URL.
-// Falls back to localhost:5001 so it still works if you haven't added the env var yet.
+// Production API requests use the frontend origin and are proxied by Vercel,
+// keeping authentication cookies first-party. VITE_API_URL is for local development.
 const configuredApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001')
   .replace(/\/+$/, '');
-const BASE_URL = /\/api$/i.test(configuredApiUrl)
+const localApiUrl = /\/api$/i.test(configuredApiUrl)
   ? configuredApiUrl
   : `${configuredApiUrl}/api`;
+const BASE_URL = import.meta.env.PROD ? '/api' : localApiUrl;
 
 export class ApiError extends Error {
   constructor(message, status, data) {

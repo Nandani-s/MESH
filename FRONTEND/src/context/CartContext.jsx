@@ -32,7 +32,8 @@ export function CartProvider({ children }) {
 	  setItems(res.data || []);
 	  trackAnalyticsEvent('add_to_cart', { productId });
 	  return true;
-	} catch {
+	} catch (error) {
+	  console.error('Failed to add product to cart:', error);
 	  return false;
 	}
   }, [isAuthenticated]);
